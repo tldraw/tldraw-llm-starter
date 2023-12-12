@@ -6,13 +6,12 @@ import {
 } from '@tldraw/tldraw'
 import { useCallback, useRef, useState } from 'react'
 import { getUserMessage } from '../function-calling/getUserMessage'
-import { parseSequence } from '../function-calling/parseSequence'
-import { useOpenAiAssistant } from './useOpenAiAssistant'
+import { useOpenAiAssistantWithFunctionCalling } from './useOpenAiAssistantWithFunctionCalling'
 
 export function UserPrompt() {
 	const editor = useEditor()
 
-	const { restart, cancel, start } = useOpenAiAssistant()
+	const { restart, cancel, start } = useOpenAiAssistantWithFunctionCalling()
 
 	const rInput = useRef<HTMLTextAreaElement>(null)
 	const [state, setState] = useState<'ready' | 'waiting'>('ready')
@@ -37,13 +36,15 @@ export function UserPrompt() {
 			const userMessage = getUserMessage(editor, input.value)
 			console.log(userMessage)
 			const result = await start(userMessage)
-			switch (result.status) {
-				case 'success': {
-					for (const text of result.results) {
-						await parseSequence(editor, text)
-					}
-				}
-			}
+			// switch (result.status) {
+			// 	case 'success': {
+			// 		// if (result.type === 'compl') {
+			// 		// 	for (const text of result.results) {
+			// 		// 		await parseSequence(editor, text)
+			// 		// 	}
+			// 		// }
+			// 	}
+			// }
 
 			setState('ready')
 		}
