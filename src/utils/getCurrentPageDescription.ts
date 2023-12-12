@@ -1,4 +1,4 @@
-import { Editor, TLGeoShape, TLTextShape } from '@tldraw/tldraw'
+import { Editor, TLDrawShape, TLGeoShape, TLTextShape } from '@tldraw/tldraw'
 
 export function getCurrentPageDescription(editor: Editor) {
 	const shapes = editor.getCurrentPageShapesSorted()
@@ -10,19 +10,23 @@ export function getCurrentPageDescription(editor: Editor) {
 
 	for (const shape of shapes) {
 		const pageBounds = editor.getShapePageBounds(shape)!
-		result += `\n- type=${
-			shape.type === 'geo'
-				? `geo (${(shape as TLGeoShape).props.geo})`
-				: shape.type
-		} center=${pageBounds.midX.toFixed(0)},${pageBounds.midY.toFixed(
+		result += `\n- ${
+			shape.type === 'geo' ? (shape as TLGeoShape).props.geo : shape.type
+		} (${pageBounds.midX.toFixed(0)},${pageBounds.midY.toFixed(
 			0
-		)} size=${pageBounds.w.toFixed(0)},${pageBounds.h.toFixed(0)}`
+		)},${pageBounds.w.toFixed(0)},${pageBounds.h.toFixed(0)})`
+
+		if (shape.type === 'draw') {
+			result += ` with the points "${(shape as TLDrawShape).props.segments
+				.flatMap((s) => s.points.map((p) => `(${p.x},${p.y})`))
+				.join(' ')}`
+		}
 
 		if (shape.type === 'text') {
-			result += ` text="${(shape as TLTextShape).props.text}"`
+			result += ` with the text "${(shape as TLTextShape).props.text}"`
 		} else {
 			if ('text' in shape.props && shape.props.text) {
-				result += ` label="${(shape as TLGeoShape).props.text}"`
+				result += ` with the label "${(shape as TLGeoShape).props.text}"`
 			}
 		}
 	}

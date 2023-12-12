@@ -77,11 +77,20 @@ export function useOpenAiAssistant() {
 
 		rRun.current = run
 
+		const startTime = Date.now()
+
 		let currentRun: OpenAI.Beta.Threads.Runs.Run | null = null
 
 		// eslint-disable-next-line no-constant-condition
 		while (true) {
 			await new Promise((resolve) => setTimeout(resolve, 500))
+			const duration = Date.now() - startTime
+
+			// Cancel after 30 seconds
+			if (duration > 30 * 1000) {
+				await openai.beta.threads.runs.cancel(thread.id, run.id)
+				break
+			}
 
 			currentRun = await openai.beta.threads.runs.retrieve(thread.id, run.id)
 
@@ -108,19 +117,15 @@ export function useOpenAiAssistant() {
 						}
 					}
 
-					console.log(results.join('\n\n'))
+					console.log(results)
 					rRun.current = null
 					return { status: 'success', results, run: currentRun } as const
 				}
-				case 'in_progress':
-				case 'queued': {
-					continue
-				}
-				default: {
-					return { status: 'unknown', run: currentRun } as const
-				}
 			}
 		}
+
+		rRun.current = null
+		return { status: 'unknown', run: currentRun } as const
 	}, [])
 
 	async function cancel() {

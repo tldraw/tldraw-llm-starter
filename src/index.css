@@ -67,5 +67,10 @@ html,
 .user-prompt__buttons {
 	display: flex;
 	flex-direction: row;
-	justify-content: flex-end;
+	justify-content: space-between;
+}
+
+.user-prompt__buttons__group {
+	display: flex;
+	flex-direction: row;
 }
