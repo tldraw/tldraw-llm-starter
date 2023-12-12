@@ -1,5 +1,5 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { CommandsDemo } from './commands-demo/CommandsDemo'
+import { CommandsDemo } from './demos/commands/CommandsDemo'
 
 const router = createBrowserRouter([{ path: '/', element: <CommandsDemo /> }])
 
