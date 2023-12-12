@@ -27,7 +27,7 @@ export function useOpenAiAssistant() {
 	const rRun = useRef<OpenAI.Beta.Threads.Run | null>(null)
 
 	const restart = useCallback(async function setup() {
-		const prompt = await fetch('./prompt.md').then((r) => r.text())
+		const prompt = await fetch('./commands-prompt.md').then((r) => r.text())
 		if (!prompt) {
 			throw Error(`Error: Prompt not found, please add one at public/prompt.md`)
 		}
