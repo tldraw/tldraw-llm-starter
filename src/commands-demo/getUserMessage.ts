@@ -3,44 +3,41 @@ import { Editor, TLDrawShape, TLGeoShape, TLTextShape } from '@tldraw/tldraw'
 export function getUserMessage(editor: Editor, prompt: string) {
 	let result = ''
 
-	result += 'Current viewport:\n'
 	result += getCurrentViewportDescription(editor)
 	result += '\n\n'
-	result += 'Current page:\n'
 	result += getCurrentPageDescription(editor)
 	result += '\n\n'
-	result += 'Prompt:\n'
-	result += prompt
+	result += `Prompt: ${prompt}`
 
 	return result
 }
 
-function getCurrentViewportDescription(editor: Editor) {
-	const { x, y, w, h } = editor.getViewportPageBounds()
+export function getCurrentViewportDescription(editor: Editor) {
+	const { midX, midY, w, h } = editor.getViewportPageBounds()
 
-	return `
-  x: ${x.toFixed(0)} 
-  y: ${y.toFixed(0)} 
-  w: ${w.toFixed(0)} 
-  h: ${h.toFixed(0)}
-`
+	let result = ''
+
+	result += `The current viewport is (${midX.toFixed(0)},${midY.toFixed(0)},${w.toFixed(
+		0
+	)},${h.toFixed(0)}).`
+
+	return result
 }
 
-function getCurrentPageDescription(editor: Editor) {
+export function getCurrentPageDescription(editor: Editor) {
 	const shapes = editor.getCurrentPageShapesSorted()
-	if (shapes.length === 0) {
-		return "There are no shapes on the current page. It's a blank page."
-	}
 
-	let result = `There are ${shapes.length} shapes on the current page. Starting from the back-most and working our way forward in z-order, they are:`
+	if (!shapes.length) return 'There are no shapes on the page.'
+
+	let result = ''
 
 	for (const shape of shapes) {
 		const pageBounds = editor.getShapePageBounds(shape)!
 		result += `\n- ${
 			shape.type === 'geo' ? (shape as TLGeoShape).props.geo : shape.type
-		} (${pageBounds.midX.toFixed(0)},${pageBounds.midY.toFixed(
+		} (${pageBounds.midX.toFixed(0)},${pageBounds.midY.toFixed(0)},${pageBounds.w.toFixed(
 			0
-		)},${pageBounds.w.toFixed(0)},${pageBounds.h.toFixed(0)})`
+		)},${pageBounds.h.toFixed(0)})`
 
 		if (shape.type === 'draw') {
 			result += ` with the points "${(shape as TLDrawShape).props.segments
