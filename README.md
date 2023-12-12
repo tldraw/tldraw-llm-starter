@@ -5,7 +5,8 @@ To use the current starter demos:
 1. Create a `.env` file in the root of this repository with the following contents:
 
 ```
-OPENAI_API_KEY=sk-etcetcetc
+OPENAI_API_KEY=sk-sk-etcetcetc
+OPENAI_ASSISTANT_ID=asst_etcetcetc
 ```
 
 2. Run `npm install` to install dependencies
