@@ -320,18 +320,18 @@ function _getKeyboardEventInfo(
 			key === 'Shift'
 				? 'ShiftLeft'
 				: key === 'Alt'
-				? 'AltLeft'
-				: key === 'Control' || key === 'Meta'
-				? 'CtrlLeft'
-				: key === ' '
-				? 'Space'
-				: key === 'Enter' ||
-				  key === 'ArrowRight' ||
-				  key === 'ArrowLeft' ||
-				  key === 'ArrowUp' ||
-				  key === 'ArrowDown'
-				? key
-				: 'Key' + key[0].toUpperCase() + key.slice(1),
+					? 'AltLeft'
+					: key === 'Control' || key === 'Meta'
+						? 'CtrlLeft'
+						: key === ' '
+							? 'Space'
+							: key === 'Enter' ||
+								  key === 'ArrowRight' ||
+								  key === 'ArrowLeft' ||
+								  key === 'ArrowUp' ||
+								  key === 'ArrowDown'
+								? key
+								: 'Key' + key[0].toUpperCase() + key.slice(1),
 		type: 'keyboard',
 		key,
 	}
