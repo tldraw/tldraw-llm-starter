@@ -29,6 +29,9 @@ html,
 	position: absolute;
 	inset: 0px;
 	pointer-events: all;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .user-prompt__container {

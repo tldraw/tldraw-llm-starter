@@ -111,13 +111,13 @@ export function useOpenAiAssistant() {
 					const messages = await openai.beta.threads.messages.list(thread.id)
 					const mostRecent = messages.data[0]
 					const results: string[] = []
-					console.log(mostRecent)
 					for (const content of mostRecent.content) {
 						if (content.type === 'text') {
 							results.push(content.text.value)
 						}
 					}
 
+					console.log(results)
 					rRun.current = null
 					return { status: 'success', results, run: currentRun } as const
 				}

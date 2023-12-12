@@ -6,7 +6,7 @@ export function getCurrentPageDescription(editor: Editor) {
 		return "There are no shapes on the current page. It's a blank page."
 	}
 
-	let result = `There are ${shapes.length} shapes on the current page. Starting from the bottom and working our way up, they are:`
+	let result = `There are ${shapes.length} shapes on the current page. Starting from the back-most and working our way forward in z-order, they are:`
 
 	for (const shape of shapes) {
 		const pageBounds = editor.getShapePageBounds(shape)!

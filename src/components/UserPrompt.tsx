@@ -1,4 +1,5 @@
 import {
+	DefaultSpinner,
 	stopEventPropagation,
 	useEditor,
 	useLocalStorageState,
@@ -61,7 +62,9 @@ export function UserPrompt() {
 					className="user-prompt__overlay"
 					onPointerMove={stopEventPropagation}
 					onPointerDown={stopEventPropagation}
-				/>
+				>
+					<DefaultSpinner />
+				</div>
 			)}
 			<div
 				className="user-prompt__container"
