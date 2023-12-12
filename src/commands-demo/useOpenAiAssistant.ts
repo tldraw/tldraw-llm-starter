@@ -1,5 +1,5 @@
 import OpenAI from 'openai'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 const apiKey = process.env.OPENAI_API_KEY ?? null
 const assistantId = process.env.OPENAI_ASSISTANT_ID ?? null

@@ -2,7 +2,6 @@ import {
 	EASINGS,
 	Editor,
 	GeoShapeGeoStyle,
-	TLKeyboardEventInfo,
 	Vec2d,
 	VecLike,
 	createShapeId,

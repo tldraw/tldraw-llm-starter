@@ -5,9 +5,9 @@ import {
 	useLocalStorageState,
 } from '@tldraw/tldraw'
 import { useCallback, useRef, useState } from 'react'
-import { getUserMessage } from '../utils/getUserMessage'
-import { parseSequence } from '../utils/parseSequence'
-import { useOpenAiAssistant } from '../hooks/useOpenAiAssistant'
+import { getUserMessage } from './getUserMessage'
+import { parseSequence } from './parseSequence'
+import { useOpenAiAssistant } from './useOpenAiAssistant'
 
 export function UserPrompt() {
 	const editor = useEditor()
@@ -69,15 +69,8 @@ export function UserPrompt() {
 					<DefaultSpinner />
 				</div>
 			)}
-			<div
-				className="user-prompt__container"
-				onPointerDown={stopEventPropagation}
-			>
-				<textarea
-					ref={rInput}
-					value={text}
-					onChange={(e) => setText(e.currentTarget.value)}
-				/>
+			<div className="user-prompt__container" onPointerDown={stopEventPropagation}>
+				<textarea ref={rInput} value={text} onChange={(e) => setText(e.currentTarget.value)} />
 				<div className="user-prompt__buttons">
 					<div className="user-prompt__buttons__group">
 						<button className="tlui-button" onClick={handleClearButtonClick}>
