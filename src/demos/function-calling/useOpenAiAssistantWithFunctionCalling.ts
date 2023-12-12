@@ -1,5 +1,5 @@
 import { useEditor } from '@tldraw/tldraw'
-import { default as OpenAI, default as openai } from 'openai'
+import { default as OpenAI } from 'openai'
 import { useCallback, useEffect, useRef } from 'react'
 import {
 	getCurrentPageDescription,
@@ -13,7 +13,7 @@ import {
 } from './functions'
 
 const apiKey = process.env.OPENAI_API_KEY ?? null
-const assistantId = process.env.OPENAI_ASSISTANT_ID ?? null
+const assistantId = process.env.OPENAI_FUNCTIONS_ASSISTANT_ID ?? null
 
 if (!apiKey) {
 	throw Error(

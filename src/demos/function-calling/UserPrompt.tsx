@@ -35,17 +35,7 @@ export function UserPrompt() {
 			// Send the user message to the thread
 			const userMessage = getUserMessage(editor, input.value)
 			console.log(userMessage)
-			const result = await start(userMessage)
-			// switch (result.status) {
-			// 	case 'success': {
-			// 		// if (result.type === 'compl') {
-			// 		// 	for (const text of result.results) {
-			// 		// 		await parseSequence(editor, text)
-			// 		// 	}
-			// 		// }
-			// 	}
-			// }
-
+			await start(userMessage)
 			setState('ready')
 		}
 	}, [editor, state])

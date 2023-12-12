@@ -5,8 +5,8 @@ import {
 	useLocalStorageState,
 } from '@tldraw/tldraw'
 import { useCallback, useRef, useState } from 'react'
-import { getUserMessage } from '../function-calling/getUserMessage'
-import { parseSequence } from '../function-calling/parseSequence'
+import { getUserMessage } from './getUserMessage'
+import { parseSequence } from './parseSequence'
 import { useOpenAiAssistant } from './useOpenAiAssistant'
 
 export function UserPrompt() {
