@@ -7,8 +7,6 @@ To use the current starter demos:
 ```
 OPENAI_API_KEY=sk-sk-etcetcetc
 OPENAI_ASSISTANT_ID=asst_etcetcetc
-VITE_OPENAI_API_KEY=sk-etcetcetc
-VITE_OPENAI_ASSISTANT_ID=asst_etcetcetc
 ```
 
 2. Run `npm install` to install dependencies
