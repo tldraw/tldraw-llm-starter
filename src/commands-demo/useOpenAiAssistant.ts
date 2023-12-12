@@ -27,7 +27,7 @@ export function useOpenAiAssistant() {
 	const rRun = useRef<OpenAI.Beta.Threads.Run | null>(null)
 
 	const restart = useCallback(async function setup() {
-		const prompt = await fetch('./prompt.md').then((r) => r.text())
+		const prompt = await fetch('./commands-prompt.md').then((r) => r.text())
 		if (!prompt) {
 			throw Error(`Error: Prompt not found, please add one at public/prompt.md`)
 		}
@@ -77,20 +77,11 @@ export function useOpenAiAssistant() {
 
 		rRun.current = run
 
-		const startTime = Date.now()
-
 		let currentRun: OpenAI.Beta.Threads.Runs.Run | null = null
 
 		// eslint-disable-next-line no-constant-condition
 		while (true) {
 			await new Promise((resolve) => setTimeout(resolve, 500))
-			const duration = Date.now() - startTime
-
-			// Cancel after 30 seconds
-			if (duration > 30 * 1000) {
-				await openai.beta.threads.runs.cancel(thread.id, run.id)
-				break
-			}
 
 			currentRun = await openai.beta.threads.runs.retrieve(thread.id, run.id)
 
@@ -117,15 +108,19 @@ export function useOpenAiAssistant() {
 						}
 					}
 
-					console.log(results)
+					console.log(results.join('\n\n'))
 					rRun.current = null
 					return { status: 'success', results, run: currentRun } as const
 				}
+				case 'in_progress':
+				case 'queued': {
+					continue
+				}
+				default: {
+					return { status: 'unknown', run: currentRun } as const
+				}
 			}
 		}
-
-		rRun.current = null
-		return { status: 'unknown', run: currentRun } as const
 	}, [])
 
 	async function cancel() {

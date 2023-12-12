@@ -50,10 +50,13 @@ export function UserPrompt() {
 	}, [editor, state])
 
 	const handleRestartButtonClick = useCallback(() => {
-		const ids = Array.from(editor.getCurrentPageShapeIds().values())
-		editor.deleteShapes(ids)
 		restart()
 	}, [editor, restart])
+
+	const handleClearButtonClick = useCallback(() => {
+		const ids = Array.from(editor.getCurrentPageShapeIds().values())
+		editor.deleteShapes(ids)
+	}, [editor])
 
 	return (
 		<>
@@ -69,12 +72,23 @@ export function UserPrompt() {
 			<div className="user-prompt__container" onPointerDown={stopEventPropagation}>
 				<textarea ref={rInput} value={text} onChange={(e) => setText(e.currentTarget.value)} />
 				<div className="user-prompt__buttons">
-					<button className="tlui-button" onClick={handleRestartButtonClick}>
-						Restart
-					</button>
-					<button className="tlui-button tlui-button__primary" onClick={handleSendButtonClick}>
-						{state === 'ready' ? 'Send' : 'Cancel'}
-					</button>
+					<div className="user-prompt__buttons__group">
+						<button className="tlui-button" onClick={handleClearButtonClick}>
+							Clear Canvas
+						</button>
+					</div>
+					<div className="user-prompt__buttons__group">
+						<button className="tlui-button" onClick={handleRestartButtonClick}>
+							New Thread
+						</button>
+						<button
+							className="tlui-button tlui-button__primary"
+							onClick={handleSendButtonClick}
+							style={{ width: 64 }}
+						>
+							{state === 'ready' ? 'Send' : 'Cancel'}
+						</button>
+					</div>
 				</div>
 			</div>
 		</>

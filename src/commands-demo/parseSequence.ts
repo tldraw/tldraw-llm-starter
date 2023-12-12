@@ -2,7 +2,6 @@ import {
 	EASINGS,
 	Editor,
 	GeoShapeGeoStyle,
-	TLKeyboardEventInfo,
 	Vec2d,
 	VecLike,
 	createShapeId,
@@ -86,7 +85,7 @@ export async function parseSequence(editor: Editor, text: string) {
 							editor.setCurrentTool('arrow')
 							break
 						}
-						case 'draw': {
+						case 'pen': {
 							editor.setCurrentTool('draw')
 							break
 						}
@@ -305,38 +304,6 @@ const basePoint = {
 	ctrlKey: false,
 } as const
 
-function _getKeyboardEventInfo(
-	key: string,
-	name: TLKeyboardEventInfo['name'],
-	options = {} as Partial<Exclude<TLKeyboardEventInfo, 'point'>>
-): TLKeyboardEventInfo {
-	return {
-		shiftKey: key === 'Shift',
-		ctrlKey: key === 'Control' || key === 'Meta',
-		altKey: key === 'Alt',
-		...options,
-		name,
-		code:
-			key === 'Shift'
-				? 'ShiftLeft'
-				: key === 'Alt'
-					? 'AltLeft'
-					: key === 'Control' || key === 'Meta'
-						? 'CtrlLeft'
-						: key === ' '
-							? 'Space'
-							: key === 'Enter' ||
-								  key === 'ArrowRight' ||
-								  key === 'ArrowLeft' ||
-								  key === 'ArrowUp' ||
-								  key === 'ArrowDown'
-								? key
-								: 'Key' + key[0].toUpperCase() + key.slice(1),
-		type: 'keyboard',
-		key,
-	}
-}
-
 async function movePointer(
 	editor: Editor,
 	to: VecLike,
@@ -350,7 +317,7 @@ async function movePointer(
 
 	for (let i = 0; i < steps; i++) {
 		await new Promise((resolve) => setTimeout(resolve, 16))
-		const t = EASINGS.easeInOutExpo(i / steps)
+		const t = EASINGS.easeInOutExpo(i / (steps - 1))
 		editor.dispatch({
 			...basePoint,
 			name: 'pointer_move',
