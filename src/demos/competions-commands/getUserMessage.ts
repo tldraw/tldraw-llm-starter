@@ -1,8 +1,7 @@
 import { Editor, TLDrawShape, TLGeoShape, TLTextShape } from '@tldraw/tldraw'
 
 export function getUserMessage(editor: Editor, prompt: string) {
-	return `User:
-${getCurrentViewportDescription(editor)}
+	return `${getCurrentViewportDescription(editor)}
 ${getCurrentPageDescription(editor)}
 
 ${prompt}`

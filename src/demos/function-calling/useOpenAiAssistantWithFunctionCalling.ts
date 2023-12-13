@@ -42,7 +42,7 @@ export function useOpenAiAssistantWithFunctionCalling() {
 	const restart = useCallback(async function setup() {
 		const prompt = await fetch('./function-calling-prompt.md').then((r) => r.text())
 		if (!prompt) {
-			throw Error(`Error: Prompt not found, please add one at public/prompt.md`)
+			throw Error(`Error: Prompt not found, please add one at public/function-calling-prompt.md`)
 		}
 
 		const assistant = await openai.beta.assistants.update(assistantId!, {

@@ -17,7 +17,7 @@ if (!assistantId) {
 }
 
 const openai = new OpenAI({
-	apiKey: process.env.VITE_OPENAI_API_KEY!,
+	apiKey: process.env.OPENAI_API_KEY!,
 	dangerouslyAllowBrowser: true,
 })
 
@@ -29,7 +29,7 @@ export function useOpenAiAssistant() {
 	const restart = useCallback(async function setup() {
 		const prompt = await fetch('./commands-prompt.md').then((r) => r.text())
 		if (!prompt) {
-			throw Error(`Error: Prompt not found, please add one at public/prompt.md`)
+			throw Error(`Error: Prompt not found, please add one at public/commands-prompt.md`)
 		}
 
 		const assistant = await openai.beta.assistants.update(assistantId!, {
