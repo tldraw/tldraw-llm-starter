@@ -8,7 +8,7 @@ const components: TLEditorComponents = {
 	},
 }
 
-export function FunctionCallingDemo() {
+export default function FunctionCallingDemo() {
 	return (
 		<div className="tldraw__editor">
 			<Tldraw autoFocus persistenceKey="tldraw_llm_starter" components={components} />

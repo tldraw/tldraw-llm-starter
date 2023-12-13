@@ -1,34 +1,41 @@
+import { lazy, Suspense } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { CommandsDemo } from './demos/commands/CommandsDemo'
-import { CompletionsDemo } from './demos/competions-commands/CompletionsDemo'
-import { FunctionCallingDemo } from './demos/function-calling/FunctionCallingDemo'
+import { Spinner } from './lib/Spinner'
+
+const CommandsDemo = lazy(() => import('./demos/commands/CommandsDemo'))
+const CompletionsDemo = lazy(() => import('./demos/competions-commands/CompletionsDemo'))
+const FunctionCallingDemo = lazy(() => import('./demos/function-calling/FunctionCallingDemo'))
+const Sandbox = lazy(() => import('./sandbox/Sandbox'))
 
 const router = createBrowserRouter([
 	{
 		path: '/',
-		children: [
-			{
-				index: true,
-				lazy: async () => ({
-					element: <CommandsDemo />,
-				}),
-			},
-			{
-				path: 'function-calling',
-				lazy: async () => ({
-					element: <FunctionCallingDemo />,
-				}),
-			},
-			{
-				path: 'completions',
-				lazy: async () => ({
-					element: <CompletionsDemo />,
-				}),
-			},
-		],
+		element: <CommandsDemo />,
+	},
+	{
+		path: '/function-calling',
+		element: <FunctionCallingDemo />,
+	},
+	{
+		path: '/completions',
+		element: <CompletionsDemo />,
+	},
+	{
+		path: '/sandbox',
+		element: <Sandbox />,
 	},
 ])
 
 export function Router() {
-	return <RouterProvider router={router} />
+	return (
+		<Suspense
+			fallback={
+				<div className="absolute inset-0 flex items-center justify-center">
+					<Spinner />
+				</div>
+			}
+		>
+			<RouterProvider router={router} />
+		</Suspense>
+	)
 }

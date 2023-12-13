@@ -8,3 +8,8 @@ interface ImportMetaEnv {
 interface ImportMeta {
 	readonly env: ImportMetaEnv
 }
+
+declare module '*.tldr' {
+	const value: string
+	export default value
+}

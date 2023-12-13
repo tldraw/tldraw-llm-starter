@@ -8,7 +8,7 @@ const components: TLEditorComponents = {
 	},
 }
 
-export function CompletionsDemo() {
+export default function CompletionsDemo() {
 	return (
 		<div className="tldraw__editor">
 			<Tldraw autoFocus persistenceKey="tldraw_llm_starter" components={components} />

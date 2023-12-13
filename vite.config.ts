@@ -14,4 +14,5 @@ export default defineConfig({
 			process.env.OPENAI_FUNCTIONS_ASSISTANT_ID
 		),
 	},
+	assetsInclude: ['**/*.tldr'],
 })

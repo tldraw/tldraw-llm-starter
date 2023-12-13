@@ -9,7 +9,7 @@ import {
 	createShapeId,
 } from '@tldraw/tldraw'
 
-function getKeyboardEvent(editor: Editor, key: string): TLKeyboardEventInfo {
+function getKeyboardEvent(_editor: Editor, key: string): TLKeyboardEventInfo {
 	return {
 		name: 'key_down',
 		type: 'keyboard',
