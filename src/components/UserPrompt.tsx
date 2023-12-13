@@ -4,49 +4,67 @@ import {
 	useEditor,
 	useLocalStorageState,
 } from '@tldraw/tldraw'
-import { useCallback, useRef, useState } from 'react'
-import { getUserMessage } from '../demos/commands/getUserMessage'
+import { useCallback, useEffect, useState } from 'react'
+import { Assistant, Thread } from '../Assistant'
+import { Spinner } from '../lib/Spinner'
+import { assert } from '../lib/utils'
 
-interface Assistant {
-	restart: () => Promise<void>
-	cancel: () => Promise<void>
-	start: (message: string) => Promise<void>
+function useAssistant<T>(assistant: Assistant<T>) {
+	const editor = useEditor()
+	const [thread, setThread] = useState<Thread<T> | null>(null)
+
+	useEffect(() => {
+		let isCancelled = false
+		;(async () => {
+			const thread = await assistant.createThread(editor)
+			if (isCancelled) return
+			setThread(thread)
+		})()
+		return () => {
+			isCancelled = true
+		}
+	}, [assistant, editor])
+
+	useEffect(() => {
+		if (!thread) return
+		return () => {
+			thread.cancel()
+		}
+	}, [thread])
+
+	const start = useCallback(
+		async (input: string) => {
+			assert(thread)
+			const userMessage = thread.getUserMessage(input)
+			const result = await thread.sendMessage(userMessage)
+			await thread.handleAssistantResponse(result)
+		},
+		[thread]
+	)
+
+	const restart = useCallback(async () => {
+		const newThread = await assistant.createThread(editor)
+		setThread(newThread)
+	}, [assistant, editor])
+
+	const cancel = useCallback(async () => {
+		assert(thread)
+		await thread.cancel()
+	}, [thread])
+
+	if (!thread) return null
+	return { start, restart, cancel }
 }
 
-export function UserPrompt({ assistant }: { assistant: Assistant }) {
+export function UserPrompt<T>({ assistant }: { assistant: Assistant<T> }) {
 	const editor = useEditor()
-	const { restart, cancel, start } = assistant
+	const controls = useAssistant(assistant)
 
-	const rInput = useRef<HTMLTextAreaElement>(null)
 	const [state, setState] = useState<'ready' | 'waiting'>('ready')
 	const [text, setText] = useLocalStorageState(
 		'prompt-input',
 		'Create a box at the center of the viewport.'
 	)
-
-	const handleSendButtonClick = useCallback(async () => {
-		if (state === 'waiting') {
-			await cancel()
-			setState('ready')
-			return
-		}
-
-		if (state === 'ready') {
-			const input = rInput.current
-			if (!input) return
-			setState('waiting')
-
-			// Send the user message to the thread
-			const userMessage = getUserMessage(editor, input.value)
-			console.log(userMessage)
-			await start(input.value)
-			setState('ready')
-		}
-	}, [cancel, editor, start, state])
-
-	const handleRestartButtonClick = useCallback(() => {
-		restart()
-	}, [restart])
 
 	const handleClearButtonClick = useCallback(() => {
 		const ids = Array.from(editor.getCurrentPageShapeIds().values())
@@ -65,27 +83,82 @@ export function UserPrompt({ assistant }: { assistant: Assistant }) {
 				</div>
 			)}
 			<div className="user-prompt__container" onPointerDown={stopEventPropagation}>
-				<textarea ref={rInput} value={text} onChange={(e) => setText(e.currentTarget.value)} />
+				<textarea value={text} onChange={(e) => setText(e.currentTarget.value)} />
 				<div className="user-prompt__buttons">
 					<div className="user-prompt__buttons__group">
 						<button className="tlui-button" onClick={handleClearButtonClick}>
 							Clear Canvas
 						</button>
 					</div>
-					<div className="user-prompt__buttons__group">
-						<button className="tlui-button" onClick={handleRestartButtonClick}>
-							New Thread
-						</button>
-						<button
-							className="tlui-button tlui-button__primary"
-							onClick={handleSendButtonClick}
-							style={{ width: 64 }}
-						>
-							{state === 'ready' ? 'Send' : 'Cancel'}
-						</button>
+					<div className="user-prompt__buttons__group items-center">
+						{controls ? (
+							<UserPromptActions
+								controls={controls}
+								input={text}
+								state={state}
+								onChangeState={setState}
+							/>
+						) : (
+							<div className="pr-3">
+								<Spinner />
+							</div>
+						)}
 					</div>
 				</div>
 			</div>
+		</>
+	)
+}
+
+function UserPromptActions({
+	controls,
+	input,
+	state,
+	onChangeState,
+}: {
+	controls: NonNullable<ReturnType<typeof useAssistant>>
+	input: string
+	state: 'ready' | 'waiting'
+	onChangeState: (state: 'ready' | 'waiting') => void
+}) {
+	const { start, restart, cancel } = controls
+
+	const handleSendButtonClick = useCallback(async () => {
+		if (state === 'waiting') {
+			await cancel()
+			onChangeState('ready')
+			return
+		}
+
+		if (state === 'ready') {
+			if (!input) return
+			onChangeState('waiting')
+
+			// Send the user message to the thread
+			await start(input)
+			onChangeState('ready')
+		}
+	}, [cancel, input, onChangeState, start, state])
+
+	const [isRestarting, setIsRestarting] = useState(false)
+	const handleRestartButtonClick = useCallback(async () => {
+		setIsRestarting(true)
+		await restart()
+		setIsRestarting(false)
+	}, [restart])
+
+	return (
+		<>
+			<button className="tlui-button" onClick={isRestarting ? undefined : handleRestartButtonClick}>
+				{isRestarting ? <Spinner /> : 'New Thread'}
+			</button>
+			<button
+				className="tlui-button tlui-button__primary"
+				onClick={handleSendButtonClick}
+				style={{ width: 64 }}
+			>
+				{state === 'ready' ? 'Send' : 'Cancel'}
+			</button>
 		</>
 	)
 }

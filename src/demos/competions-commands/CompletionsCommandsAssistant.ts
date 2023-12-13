@@ -9,17 +9,10 @@ import commandsPrompt from './completions-prompt.md'
 import { getUserMessage } from './getUserMessage'
 
 const apiKey = process.env.OPENAI_API_KEY ?? null
-const assistantId = process.env.OPENAI_ASSISTANT_ID ?? null
 
 if (!apiKey) {
 	throw Error(
 		`Error: OpenAI API key not found, please create an API Key in the OpenAI platform and add it as .env.VITE_OPENAI_API_KEY`
-	)
-}
-
-if (!assistantId) {
-	throw Error(
-		`Error: Assistant ID not found, please create an assistant in the OpenAI platform playground and add its id to .env.VITE_OPENAI_ASSISTANT_ID`
 	)
 }
 
@@ -121,12 +114,12 @@ export class CompletionCommandsThread implements Thread<ChatCompletionStream> {
 			})
 
 			stream.on('abort', () => {
-				resolve()
+				reject(new Error('Stream aborted'))
 			})
 
 			stream.on('error', (err) => {
 				console.error(err)
-				resolve()
+				reject(err)
 			})
 
 			stream.on('end', () => {
