@@ -29,78 +29,81 @@ export function useCompletions() {
 	const rStream = useRef<ChatCompletionStream | null>(null)
 	const rMessages = useRef<OpenAI.Chat.Completions.ChatCompletionMessageParam[]>([])
 
-	const start = useCallback(async (userMessage: string) => {
-		const api = new EditorDriverApi(editor)
+	const start = useCallback(
+		async (userMessage: string) => {
+			const api = new EditorDriverApi(editor)
 
-		// const snapshot = await fetch('./test-message-1.md').then((r) => r.text())
-		// api.processSnapshot(snapshot)
-		// return
+			// const snapshot = await fetch('./test-message-1.md').then((r) => r.text())
+			// api.processSnapshot(snapshot)
+			// return
 
-		const prompt = await fetch('./completions-prompt.md').then((r) => r.text())
-		if (!prompt) {
-			throw Error(`Error: Prompt not found, please add one at public/completions-prompt.md`)
-		}
-
-		return await new Promise<void>((resolve) => {
-			const stream = openai.beta.chat.completions.stream({
-				model: 'gpt-4',
-				messages: [
-					{
-						role: 'user',
-						content: prompt,
-					},
-					{
-						role: 'assistant',
-						content: "Sounds good, let's get started!",
-					},
-					{ role: 'user', content: userMessage },
-					...rMessages.current,
-				],
-			})
-
-			if (!stream) {
-				throw Error(`Error: could not create stream.`)
+			const prompt = await fetch('./completions-prompt.md').then((r) => r.text())
+			if (!prompt) {
+				throw Error(`Error: Prompt not found, please add one at public/completions-prompt.md`)
 			}
 
-			rStream.current = stream
-
-			stream.on('content', (_delta, snapshot) => {
-				if (stream.aborted) return
-
-				// Tell the driver API to process the whole snapshot
-				api.processSnapshot(snapshot)
-			})
-
-			stream.on('finalContent', (snapshot) => {
-				if (stream.aborted) return
-
-				// Tell the driver API to complete
-				api.complete()
-
-				// Add the user message to the thread
-				rMessages.current.push({ role: 'user', content: userMessage })
-				// Add the assistant's response to the thread
-				rMessages.current.push({
-					role: 'assistant',
-					content: snapshot,
+			return await new Promise<void>((resolve) => {
+				const stream = openai.beta.chat.completions.stream({
+					model: 'gpt-4',
+					messages: [
+						{
+							role: 'user',
+							content: prompt,
+						},
+						{
+							role: 'assistant',
+							content: "Sounds good, let's get started!",
+						},
+						{ role: 'user', content: userMessage },
+						...rMessages.current,
+					],
 				})
-				resolve()
-			})
 
-			stream.on('abort', () => {
-				resolve()
-			})
+				if (!stream) {
+					throw Error(`Error: could not create stream.`)
+				}
 
-			stream.on('error', (err) => {
-				console.error(err)
-				resolve()
-			})
+				rStream.current = stream
 
-			stream.on('end', () => {
-				resolve()
+				stream.on('content', (_delta, snapshot) => {
+					if (stream.aborted) return
+
+					// Tell the driver API to process the whole snapshot
+					api.processSnapshot(snapshot)
+				})
+
+				stream.on('finalContent', (snapshot) => {
+					if (stream.aborted) return
+
+					// Tell the driver API to complete
+					api.complete()
+
+					// Add the user message to the thread
+					rMessages.current.push({ role: 'user', content: userMessage })
+					// Add the assistant's response to the thread
+					rMessages.current.push({
+						role: 'assistant',
+						content: snapshot,
+					})
+					resolve()
+				})
+
+				stream.on('abort', () => {
+					resolve()
+				})
+
+				stream.on('error', (err) => {
+					console.error(err)
+					resolve()
+				})
+
+				stream.on('end', () => {
+					resolve()
+				})
 			})
-		})
-	}, [])
+		},
+		[editor]
+	)
 
 	async function cancel() {
 		const stream = rStream.current

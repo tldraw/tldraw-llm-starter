@@ -26,8 +26,9 @@ export function useOpenAiAssistant() {
 	const rThread = useRef<OpenAI.Beta.Threads.Thread | null>(null)
 	const rRun = useRef<OpenAI.Beta.Threads.Run | null>(null)
 
-	const restart = useCallback(async function setup() {
+	const restart = useCallback(async function setup(isCancelled: () => boolean = () => false) {
 		const prompt = await fetch('./commands-prompt.md').then((r) => r.text())
+		if (isCancelled()) return
 		if (!prompt) {
 			throw Error(`Error: Prompt not found, please add one at public/commands-prompt.md`)
 		}
@@ -36,6 +37,7 @@ export function useOpenAiAssistant() {
 			instructions: prompt,
 			model: 'gpt-4-32k-0613',
 		})
+		if (isCancelled()) return
 
 		if (!assistant) {
 			throw Error(`Error: could not update assistant.`)
@@ -44,6 +46,7 @@ export function useOpenAiAssistant() {
 		rAssistant.current = assistant
 
 		const thread = await openai.beta.threads.create()
+		if (isCancelled()) return
 
 		if (!thread) {
 			throw Error(`Error: could not create thread.`)
@@ -54,9 +57,13 @@ export function useOpenAiAssistant() {
 
 	useEffect(() => {
 		if (!rAssistant.current || !rThread.current) {
-			restart()
+			let isCancelled = false
+			restart(() => isCancelled)
+			return () => {
+				isCancelled = true
+			}
 		}
-	}, [rAssistant.current, rThread.current])
+	})
 
 	const start = useCallback(async (userMessage: string) => {
 		const thread = rThread.current
@@ -127,7 +134,7 @@ export function useOpenAiAssistant() {
 		const thread = rThread.current
 		const run = rRun.current
 		if (!run || !thread) return
-		return await openai.beta.threads.runs.cancel(thread!.id, run.id)
+		await openai.beta.threads.runs.cancel(thread!.id, run.id)
 	}
 
 	return { start, cancel, restart }

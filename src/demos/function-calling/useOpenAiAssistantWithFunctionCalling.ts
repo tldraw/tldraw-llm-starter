@@ -39,8 +39,9 @@ export function useOpenAiAssistantWithFunctionCalling() {
 	const rThread = useRef<OpenAI.Beta.Threads.Thread | null>(null)
 	const rRun = useRef<OpenAI.Beta.Threads.Run | null>(null)
 
-	const restart = useCallback(async function setup() {
+	const restart = useCallback(async function setup(isCancelled: () => boolean = () => false) {
 		const prompt = await fetch('./function-calling-prompt.md').then((r) => r.text())
+		if (isCancelled()) return
 		if (!prompt) {
 			throw Error(`Error: Prompt not found, please add one at public/function-calling-prompt.md`)
 		}
@@ -193,6 +194,7 @@ export function useOpenAiAssistantWithFunctionCalling() {
 				},
 			],
 		})
+		if (isCancelled()) return
 
 		if (!assistant) {
 			throw Error(`Error: could not update assistant.`)
@@ -201,6 +203,7 @@ export function useOpenAiAssistantWithFunctionCalling() {
 		rAssistant.current = assistant
 
 		const thread = await openai.beta.threads.create()
+		if (isCancelled()) return
 
 		if (!thread) {
 			throw Error(`Error: could not create thread.`)
@@ -211,188 +214,195 @@ export function useOpenAiAssistantWithFunctionCalling() {
 
 	useEffect(() => {
 		if (!rAssistant.current || !rThread.current) {
-			restart()
-		}
-	}, [rAssistant.current, rThread.current])
-
-	const start = useCallback(async (userMessage: string) => {
-		const thread = rThread.current
-		const assistant = rAssistant.current
-
-		if (!thread) return { status: 'not ready', run: null } as const
-		if (!assistant) return { status: 'not ready', run: null } as const
-
-		await openai.beta.threads.messages.create(thread.id, {
-			role: 'user',
-			content: userMessage,
-		})
-
-		// Create and start a new run
-		const run = await openai.beta.threads.runs.create(thread.id, {
-			assistant_id: assistant.id,
-		})
-
-		rRun.current = run
-
-		let currentRun: OpenAI.Beta.Threads.Runs.Run | null = null
-
-		// eslint-disable-next-line no-constant-condition
-		while (true) {
-			await new Promise((resolve) => setTimeout(resolve, 100))
-
-			currentRun = await openai.beta.threads.runs.retrieve(thread.id, run.id)
-
-			switch (currentRun.status) {
-				case 'requires_action': {
-					const toolCalls = currentRun.required_action?.submit_tool_outputs?.tool_calls
-					if (!toolCalls) {
-						await openai.beta.threads.runs.cancel(thread.id, run.id)
-						return { status: 'unknown action', run: currentRun } as const
-					}
-
-					const toolOutputs: OpenAI.Beta.Threads.Runs.RunSubmitToolOutputsParams['tool_outputs'] =
-						[]
-
-					for (const call of toolCalls) {
-						const {
-							id,
-							function: { name },
-						} = call
-
-						console.log(`calling ${name} with arguments: ${call.function.arguments}`)
-
-						switch (name) {
-							case 'getCurrentViewport': {
-								const page = getCurrentViewportDescription(editor)
-								toolOutputs.push({
-									tool_call_id: id,
-									output: JSON.stringify(page.toJson()),
-								})
-								break
-							}
-							case 'getCurrentPage': {
-								const page = getCurrentPageDescription(editor)
-								toolOutputs.push({
-									tool_call_id: id,
-									output: page,
-								})
-								break
-							}
-							case 'getCurrentPointer': {
-								const { x, y } = getCurrentPointer(editor)
-								toolOutputs.push({
-									tool_call_id: id,
-									output: JSON.stringify({ x, y }),
-								})
-								break
-							}
-							case 'pointerMove': {
-								await pointerMove(editor, JSON.parse(call.function.arguments))
-								toolOutputs.push({
-									tool_call_id: id,
-									output: 'success',
-								})
-								break
-							}
-							case 'pointerDown': {
-								await pointerDown(editor)
-								toolOutputs.push({
-									tool_call_id: id,
-									output: 'success',
-								})
-								break
-							}
-							case 'pointerUp': {
-								await pointerUp(editor)
-								toolOutputs.push({
-									tool_call_id: id,
-									output: 'success',
-								})
-								break
-							}
-							case 'selectTool': {
-								selectTool(editor, JSON.parse(call.function.arguments))
-								toolOutputs.push({
-									tool_call_id: id,
-									output: 'success',
-								})
-								break
-							}
-							case 'placeText': {
-								placeText(editor, JSON.parse(call.function.arguments))
-								toolOutputs.push({
-									tool_call_id: id,
-									output: 'success',
-								})
-								break
-							}
-							case 'startShape': {
-								toolOutputs.push({
-									tool_call_id: id,
-									output: 'ok',
-								})
-								break
-							}
-							case 'endShape': {
-								toolOutputs.push({
-									tool_call_id: id,
-									output: 'ok',
-								})
-								break
-							}
-							default: {
-								// cancel run
-								console.error(`Unknown tool call: ${name}`)
-								await openai.beta.threads.runs.cancel(thread.id, run.id)
-								return { status: 'unknown action', run: currentRun } as const
-							}
-						}
-					}
-
-					await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, {
-						tool_outputs: toolOutputs,
-					})
-
-					break
-				}
-				case 'expired': {
-					rRun.current = null
-					return { status: 'failure', run: currentRun } as const
-				}
-				case 'failed': {
-					rRun.current = null
-					return { status: 'failure', run: currentRun } as const
-				}
-				case 'completed': {
-					const messages = await openai.beta.threads.messages.list(thread.id)
-					const mostRecent = messages.data[0]
-					const results: string[] = []
-					for (const content of mostRecent.content) {
-						if (content.type === 'text') {
-							results.push(content.text.value)
-						}
-					}
-
-					console.log(results.join('\n\n'))
-					rRun.current = null
-					return { status: 'success', run: currentRun } as const
-				}
-				case 'in_progress':
-				case 'queued': {
-					break
-				}
-				default: {
-					break
-				}
+			let isCancelled = false
+			restart(() => isCancelled)
+			return () => {
+				isCancelled = true
 			}
 		}
-	}, [])
+	})
+
+	const start = useCallback(
+		async (userMessage: string) => {
+			const thread = rThread.current
+			const assistant = rAssistant.current
+
+			if (!thread) return { status: 'not ready', run: null } as const
+			if (!assistant) return { status: 'not ready', run: null } as const
+
+			await openai.beta.threads.messages.create(thread.id, {
+				role: 'user',
+				content: userMessage,
+			})
+
+			// Create and start a new run
+			const run = await openai.beta.threads.runs.create(thread.id, {
+				assistant_id: assistant.id,
+			})
+
+			rRun.current = run
+
+			let currentRun: OpenAI.Beta.Threads.Runs.Run | null = null
+
+			// eslint-disable-next-line no-constant-condition
+			while (true) {
+				await new Promise((resolve) => setTimeout(resolve, 100))
+
+				currentRun = await openai.beta.threads.runs.retrieve(thread.id, run.id)
+
+				switch (currentRun.status) {
+					case 'requires_action': {
+						const toolCalls = currentRun.required_action?.submit_tool_outputs?.tool_calls
+						if (!toolCalls) {
+							await openai.beta.threads.runs.cancel(thread.id, run.id)
+							return { status: 'unknown action', run: currentRun } as const
+						}
+
+						const toolOutputs: OpenAI.Beta.Threads.Runs.RunSubmitToolOutputsParams['tool_outputs'] =
+							[]
+
+						for (const call of toolCalls) {
+							const {
+								id,
+								function: { name },
+							} = call
+
+							console.log(`calling ${name} with arguments: ${call.function.arguments}`)
+
+							switch (name) {
+								case 'getCurrentViewport': {
+									const page = getCurrentViewportDescription(editor)
+									toolOutputs.push({
+										tool_call_id: id,
+										output: JSON.stringify(page.toJson()),
+									})
+									break
+								}
+								case 'getCurrentPage': {
+									const page = getCurrentPageDescription(editor)
+									toolOutputs.push({
+										tool_call_id: id,
+										output: page,
+									})
+									break
+								}
+								case 'getCurrentPointer': {
+									const { x, y } = getCurrentPointer(editor)
+									toolOutputs.push({
+										tool_call_id: id,
+										output: JSON.stringify({ x, y }),
+									})
+									break
+								}
+								case 'pointerMove': {
+									await pointerMove(editor, JSON.parse(call.function.arguments))
+									toolOutputs.push({
+										tool_call_id: id,
+										output: 'success',
+									})
+									break
+								}
+								case 'pointerDown': {
+									await pointerDown(editor)
+									toolOutputs.push({
+										tool_call_id: id,
+										output: 'success',
+									})
+									break
+								}
+								case 'pointerUp': {
+									await pointerUp(editor)
+									toolOutputs.push({
+										tool_call_id: id,
+										output: 'success',
+									})
+									break
+								}
+								case 'selectTool': {
+									selectTool(editor, JSON.parse(call.function.arguments))
+									toolOutputs.push({
+										tool_call_id: id,
+										output: 'success',
+									})
+									break
+								}
+								case 'placeText': {
+									placeText(editor, JSON.parse(call.function.arguments))
+									toolOutputs.push({
+										tool_call_id: id,
+										output: 'success',
+									})
+									break
+								}
+								case 'startShape': {
+									toolOutputs.push({
+										tool_call_id: id,
+										output: 'ok',
+									})
+									break
+								}
+								case 'endShape': {
+									toolOutputs.push({
+										tool_call_id: id,
+										output: 'ok',
+									})
+									break
+								}
+								default: {
+									// cancel run
+									console.error(`Unknown tool call: ${name}`)
+									await openai.beta.threads.runs.cancel(thread.id, run.id)
+									return { status: 'unknown action', run: currentRun } as const
+								}
+							}
+						}
+
+						await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, {
+							tool_outputs: toolOutputs,
+						})
+
+						break
+					}
+					case 'expired': {
+						rRun.current = null
+						return { status: 'failure', run: currentRun } as const
+					}
+					case 'failed': {
+						rRun.current = null
+						return { status: 'failure', run: currentRun } as const
+					}
+					case 'completed': {
+						const messages = await openai.beta.threads.messages.list(thread.id)
+						const mostRecent = messages.data[0]
+						const results: string[] = []
+						for (const content of mostRecent.content) {
+							if (content.type === 'text') {
+								results.push(content.text.value)
+							}
+						}
+
+						console.log(results.join('\n\n'))
+						rRun.current = null
+						return { status: 'success', run: currentRun } as const
+					}
+					case 'in_progress':
+					case 'queued': {
+						break
+					}
+					default: {
+						break
+					}
+				}
+			}
+		},
+		[editor]
+	)
 
 	async function cancel() {
 		const thread = rThread.current
 		const run = rRun.current
 		if (!run || !thread) return
-		return await openai.beta.threads.runs.cancel(thread!.id, run.id)
+		await openai.beta.threads.runs.cancel(thread!.id, run.id)
 	}
 
 	return { start, cancel, restart }

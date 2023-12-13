@@ -1,10 +1,24 @@
-import { TLEditorComponents, Tldraw } from '@tldraw/tldraw'
+import { TLEditorComponents, Tldraw, useEditor } from '@tldraw/tldraw'
 import '@tldraw/tldraw/tldraw.css'
-import { UserPrompt } from './UserPrompt'
+import { useCallback } from 'react'
+import { UserPrompt } from '../../components/UserPrompt'
+import { getUserMessage } from './getUserMessage'
+import { useCompletions } from './useCompletions'
 
 const components: TLEditorComponents = {
 	InFrontOfTheCanvas: () => {
-		return <UserPrompt />
+		const editor = useEditor()
+		const { start, restart, cancel } = useCompletions()
+
+		const startWithPrompt = useCallback(
+			async (input: string) => {
+				const userMessage = getUserMessage(editor, input)
+				await start(userMessage)
+			},
+			[editor, start]
+		)
+
+		return <UserPrompt assistant={{ start: startWithPrompt, restart, cancel }} />
 	},
 }
 

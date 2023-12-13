@@ -5,13 +5,17 @@ import {
 	useLocalStorageState,
 } from '@tldraw/tldraw'
 import { useCallback, useRef, useState } from 'react'
-import { getUserMessage } from '../function-calling/getUserMessage'
-import { useOpenAiAssistantWithFunctionCalling } from './useOpenAiAssistantWithFunctionCalling'
+import { getUserMessage } from '../demos/commands/getUserMessage'
 
-export function UserPrompt() {
+interface Assistant {
+	restart: () => Promise<void>
+	cancel: () => Promise<void>
+	start: (message: string) => Promise<void>
+}
+
+export function UserPrompt({ assistant }: { assistant: Assistant }) {
 	const editor = useEditor()
-
-	const { restart, cancel, start } = useOpenAiAssistantWithFunctionCalling()
+	const { restart, cancel, start } = assistant
 
 	const rInput = useRef<HTMLTextAreaElement>(null)
 	const [state, setState] = useState<'ready' | 'waiting'>('ready')
@@ -35,14 +39,14 @@ export function UserPrompt() {
 			// Send the user message to the thread
 			const userMessage = getUserMessage(editor, input.value)
 			console.log(userMessage)
-			await start(userMessage)
+			await start(input.value)
 			setState('ready')
 		}
-	}, [editor, state])
+	}, [cancel, editor, start, state])
 
 	const handleRestartButtonClick = useCallback(() => {
 		restart()
-	}, [editor, restart])
+	}, [restart])
 
 	const handleClearButtonClick = useCallback(() => {
 		const ids = Array.from(editor.getCurrentPageShapeIds().values())

@@ -254,9 +254,7 @@ export class EditorDriverApi {
 				break
 			}
 			case 'POINTER_DRAG': {
-				const [x1, y1, x2, y2, modifiers] = params as [number, number, number, number, string]
-				if (modifiers.includes('alt')) {
-				}
+				const [x1, y1, x2, y2, _modifiers] = params as [number, number, number, number, string]
 				pointerMove(this.editor, { x: x1, y: y1 })
 				pointerDown(this.editor)
 				await pointerMove(this.editor, { x: x2, y: y2 })
