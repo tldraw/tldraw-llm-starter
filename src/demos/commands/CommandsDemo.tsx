@@ -1,30 +1,57 @@
 import { TLEditorComponents, Tldraw, useEditor } from '@tldraw/tldraw'
-import { useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { UserPrompt } from '../../components/UserPrompt'
-import { getUserMessage } from './getUserMessage'
-import { parseSequence } from './parseSequence'
-import { useOpenAiAssistant } from './useOpenAiAssistant'
+import { assert } from '../../lib/utils'
+import { OpenAiCommandsAssistant, OpenAiCommandsThread } from './OpenAiCommandsAssistant'
 
 const components: TLEditorComponents = {
 	InFrontOfTheCanvas: () => {
 		const editor = useEditor()
-		const { start, restart, cancel } = useOpenAiAssistant()
+		const assistant = useMemo(() => new OpenAiCommandsAssistant(), [])
+		const [thread, setThread] = useState<OpenAiCommandsThread | null>(null)
 
-		const startWithPrompt = useCallback(
+		useEffect(() => {
+			let isCancelled = false
+			;(async () => {
+				const thread = await assistant.createThread(editor)
+				if (isCancelled) return
+				setThread(thread)
+			})()
+			return () => {
+				isCancelled = true
+			}
+		}, [assistant, editor])
+
+		useEffect(() => {
+			if (!thread) return
+			return () => {
+				thread.cancel()
+			}
+		}, [thread])
+
+		const start = useCallback(
 			async (input: string) => {
-				const userMessage = getUserMessage(editor, input)
-				console.log(userMessage)
-				const result = await start(userMessage)
-				if (result.status === 'success') {
-					for (const text of result.results) {
-						await parseSequence(editor, text)
-					}
-				}
+				assert(thread)
+				const userMessage = thread.getUserMessage(input)
+				const result = await thread.sendMessage(userMessage)
+				await thread.handleAssistantResponse(result)
 			},
-			[editor, start]
+			[thread]
 		)
 
-		return <UserPrompt assistant={{ start: startWithPrompt, restart, cancel }} />
+		const restart = useCallback(async () => {
+			const newThread = await assistant.createThread(editor)
+			setThread(newThread)
+		}, [assistant, editor])
+
+		const cancel = useCallback(async () => {
+			assert(thread)
+			await thread.cancel()
+		}, [thread])
+
+		if (!thread) return null
+
+		return <UserPrompt assistant={{ start, restart, cancel }} />
 	},
 }
 

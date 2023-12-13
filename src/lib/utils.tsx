@@ -37,3 +37,13 @@ export function applyUpdateWithin<T, Key extends keyof T>(
 export function randomId() {
 	return Math.random().toString(36).slice(2)
 }
+
+export function delayMs(ms: number) {
+	return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+export function assert(condition: unknown, message?: string): asserts condition {
+	if (!condition) {
+		throw new Error(message ?? 'Assertion error')
+	}
+}

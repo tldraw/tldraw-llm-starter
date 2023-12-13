@@ -12,6 +12,7 @@ import {
 } from '@tldraw/tldraw'
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { Spinner } from '../lib/Spinner'
+import { fetchText } from '../lib/fetchText'
 import { UpdateAction, UpdateFn, applyUpdateWithin, randomId } from '../lib/utils'
 import { scenarios } from '../scenarios/0_scenarios'
 
@@ -48,11 +49,9 @@ export default function Sandbox() {
 			const order = Object.keys(scenarios)
 			const scenarioEntries = await Promise.all(
 				Object.entries(scenarios).map(async ([name, file]) => {
-					const response = await fetch(file)
-					const value = await response.text()
 					const scenario: PreparingScenarioState = {
 						name,
-						fileContents: value,
+						fileContents: await fetchText(file),
 						state: 'preparing',
 					}
 					return [name, scenario] as const
