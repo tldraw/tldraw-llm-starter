@@ -11,5 +11,6 @@ module.exports = {
 	rules: {
 		'no-mixed-spaces-and-tabs': 'off',
 		'@typescript-eslint/no-unused-vars': 'off',
+		'@typescript-eslint/no-explicit-any': 'off',
 	},
 }

@@ -13,7 +13,31 @@ function useAssistant<T>(assistant: Assistant<T>) {
 	const editor = useEditor()
 	const [thread, setThread] = useState<Thread<T> | null>(null)
 
+	const [isReady, setIsReady] = useState(false)
 	useEffect(() => {
+		setIsReady(false)
+		let isCancelled = false
+		;(async () => {
+			const systemPrompt = await assistant.getDefaultSystemPrompt()
+			if (isCancelled) return
+
+			await assistant.setSystemPrompt(systemPrompt)
+			if (isCancelled) return
+
+			setIsReady(true)
+		})()
+
+		return () => {
+			isCancelled = true
+		}
+	}, [assistant])
+
+	useEffect(() => {
+		if (!isReady) {
+			setThread(null)
+			return
+		}
+
 		let isCancelled = false
 		;(async () => {
 			const thread = await assistant.createThread(editor)
@@ -23,7 +47,7 @@ function useAssistant<T>(assistant: Assistant<T>) {
 		return () => {
 			isCancelled = true
 		}
-	}, [assistant, editor])
+	}, [assistant, editor, isReady])
 
 	useEffect(() => {
 		if (!thread) return
@@ -52,7 +76,7 @@ function useAssistant<T>(assistant: Assistant<T>) {
 		await thread.cancel()
 	}, [thread])
 
-	if (!thread) return null
+	if (!thread || !isReady) return null
 	return { start, restart, cancel }
 }
 

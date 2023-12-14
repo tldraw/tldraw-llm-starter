@@ -30,31 +30,25 @@ const openai = new OpenAI({
 export class OpenAiCommandsAssistant implements Assistant<string[]> {
 	constructor() {}
 
-	assistantPromise: Promise<OpenAI.Beta.Assistants.Assistant> | null = null
-	getAssistant() {
-		if (!this.assistantPromise) {
-			this.assistantPromise = (async () => {
-				const prompt = await fetchText(commandsPrompt)
+	getDefaultSystemPrompt(): Promise<string> {
+		return fetchText(commandsPrompt)
+	}
 
-				return await openai.beta.assistants.update(assistantId!, {
-					instructions: prompt,
-					model: 'gpt-4-32k-0613',
-				})
-			})()
-		}
-		return this.assistantPromise
+	async setSystemPrompt(prompt: string): Promise<void> {
+		await openai.beta.assistants.update(assistantId!, {
+			instructions: prompt,
+			model: 'gpt-4-32k-0613',
+		})
 	}
 
 	async createThread(editor: Editor) {
-		const assistant = await this.getAssistant()
 		const thread = await openai.beta.threads.create()
-		return new OpenAiCommandsThread(assistant, thread, editor)
+		return new OpenAiCommandsThread(thread, editor)
 	}
 }
 
 export class OpenAiCommandsThread implements Thread<string[]> {
 	constructor(
-		readonly assistant: OpenAI.Beta.Assistants.Assistant,
 		readonly thread: OpenAI.Beta.Threads.Thread,
 		readonly editor: Editor
 	) {}
@@ -77,7 +71,7 @@ export class OpenAiCommandsThread implements Thread<string[]> {
 		})
 
 		const run = await openai.beta.threads.runs.create(this.thread.id, {
-			assistant_id: this.assistant.id,
+			assistant_id: assistantId!,
 		})
 		const runId = run.id
 		this.current.run = run

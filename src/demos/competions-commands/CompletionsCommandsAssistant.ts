@@ -24,16 +24,18 @@ const openai = new OpenAI({
 export class CompletionCommandsAssistant implements Assistant<ChatCompletionStream> {
 	constructor() {}
 
-	systemPromptPromise: Promise<string> | null = null
-	getSystemPrompt() {
-		if (!this.systemPromptPromise) {
-			this.systemPromptPromise = fetchText(commandsPrompt)
-		}
-		return this.systemPromptPromise
+	systemPrompt: string | null = null
+
+	getDefaultSystemPrompt(): Promise<string> {
+		return fetchText(commandsPrompt)
+	}
+
+	async setSystemPrompt(prompt: string) {
+		this.systemPrompt = prompt
 	}
 
 	async createThread(editor: Editor) {
-		const systemPrompt = await this.getSystemPrompt()
+		const systemPrompt = this.systemPrompt ?? (await this.getDefaultSystemPrompt())
 		return new CompletionCommandsThread(systemPrompt, editor)
 	}
 }
