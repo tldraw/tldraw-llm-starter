@@ -1,31 +1,33 @@
 import { Editor, TLDrawShape, TLGeoShape, TLTextShape } from '@tldraw/tldraw'
 
 export function getUserMessage(editor: Editor, prompt: string) {
-	return `User:
-${getCurrentViewportDescription(editor)}
-${getCurrentPageDescription(editor)}
-
-${prompt}`
+	return prompt
 }
 
 export function getCurrentViewportDescription(editor: Editor) {
-	const { x, y, w, h } = editor.getViewportPageBounds()
-	return `My current viewport is (${x.toFixed(0)},${y.toFixed(0)},${w.toFixed(0)},${h.toFixed(0)}).`
+	const { midX, midY, w, h } = editor.getViewportPageBounds()
+
+	let result = ''
+
+	result += `The current viewport is (${midX.toFixed(0)},${midY.toFixed(0)},${w.toFixed(
+		0
+	)},${h.toFixed(0)}).`
+
+	return result
 }
 
 export function getCurrentPageDescription(editor: Editor) {
 	const shapes = editor.getCurrentPageShapesSorted()
 
-	if (!shapes.length) return 'There are currently no shapes on the page.'
+	if (!shapes.length) return 'There are no shapes on the page.'
 
-	let result =
-		'There are currently ${shapes.length} shapes on the page. Starting from the back-most and working our way forward in z-order, they are:'
+	let result = ''
 
 	for (const shape of shapes) {
 		const pageBounds = editor.getShapePageBounds(shape)!
 		result += `\n- ${
 			shape.type === 'geo' ? (shape as TLGeoShape).props.geo : shape.type
-		} (${pageBounds.x.toFixed(0)},${pageBounds.y.toFixed(0)},${pageBounds.w.toFixed(
+		} (${pageBounds.midX.toFixed(0)},${pageBounds.midY.toFixed(0)},${pageBounds.w.toFixed(
 			0
 		)},${pageBounds.h.toFixed(0)})`
 
