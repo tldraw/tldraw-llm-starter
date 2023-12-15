@@ -1,5 +1,5 @@
 import { Editor } from '@tldraw/tldraw'
-import { pointerDown, pointerMove, pointerUp, selectTool } from './functions'
+import { pointerDown, pointerMove, pointerMoveTo, pointerUp, selectTool } from './functions'
 
 const commands = [
 	{
@@ -237,7 +237,7 @@ export class EditorDriverApi {
 			}
 		})
 
-		console.log(name, params)
+		console.log([name, ...params].join(' '))
 
 		switch (name) {
 			case 'POINTER_DOWN': {
@@ -250,14 +250,15 @@ export class EditorDriverApi {
 			}
 			case 'POINTER_MOVE': {
 				const [x, y] = params as [number, number, string]
-				await pointerMove(this.editor, { x, y })
+				await pointerMoveTo(this.editor, { x, y })
 				break
 			}
 			case 'POINTER_DRAG': {
 				const [x1, y1, x2, y2, _modifiers] = params as [number, number, number, number, string]
 				pointerMove(this.editor, { x: x1, y: y1 })
 				pointerDown(this.editor)
-				await pointerMove(this.editor, { x: x2, y: y2 })
+				await pointerMoveTo(this.editor, { x: x2, y: y2 })
+				pointerUp(this.editor)
 				break
 			}
 			case 'TOOL': {

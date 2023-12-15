@@ -99,8 +99,7 @@ export function getCurrentPageDescription(editor: Editor) {
 export async function pointerMoveTo(editor: Editor, { x, y }: { x: number; y: number }) {
 	const current = editor.inputs.currentScreenPoint.toJson()
 	const next = editor.pageToScreen({ x, y })
-	const dist = Vec2d.Dist(current, next)
-	const steps = Math.min(32, Math.max(2, Math.ceil(dist / 8)))
+	const steps = 8
 
 	for (let i = 0; i < steps; i++) {
 		const point = Vec2d.Lrp(current, next, i / (steps - 1))
@@ -120,6 +119,7 @@ export async function pointerMove(editor: Editor, { x, y }: { x: number; y: numb
 		name: 'pointer_move',
 		point: pointInScreenSpace,
 	})
+	await waitFrame()
 }
 
 export async function pointerDown(editor: Editor) {
