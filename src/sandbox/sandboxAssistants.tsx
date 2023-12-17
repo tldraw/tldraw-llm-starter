@@ -8,11 +8,11 @@ export const sandboxAssistants = [
 		create: () => new OpenAiCommandsAssistant(),
 	},
 	{
-		name: 'OpenAI Assistant with function calling',
-		create: () => new OpenAiWithFunctionCallingAssistant(),
-	},
-	{
 		name: 'OpenAI Completions with commands',
 		create: () => new CompletionCommandsAssistant(),
+	},
+	{
+		name: 'OpenAI Assistant with function calling',
+		create: () => new OpenAiWithFunctionCallingAssistant(),
 	},
 ] as const

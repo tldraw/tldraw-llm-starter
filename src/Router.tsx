@@ -7,23 +7,52 @@ const CompletionsDemo = lazy(() => import('./demos/competions-commands/Completio
 const FunctionCallingDemo = lazy(() => import('./demos/function-calling/FunctionCallingDemo'))
 const Sandbox = lazy(() => import('./sandbox/Sandbox'))
 
-const router = createBrowserRouter([
+const routes = [
 	{
-		path: '/',
-		element: <CommandsDemo />,
-	},
-	{
-		path: '/function-calling',
-		element: <FunctionCallingDemo />,
-	},
-	{
+		name: 'OpenAI with completions',
 		path: '/completions',
 		element: <CompletionsDemo />,
 	},
 	{
+		name: 'OpenAI Assistant',
+		path: '/function-calling',
+		element: <CommandsDemo />,
+	},
+	{
+		name: 'OpenAI Assistant with function calling',
+		path: '/function-calling',
+		element: <FunctionCallingDemo />,
+	},
+	{
+		name: 'Sandbox',
 		path: '/sandbox',
 		element: <Sandbox />,
 	},
+]
+
+function Home() {
+	return (
+		<div className="p-2">
+			<h2 className="text-xl font-bold">tldraw + LLM demos</h2>
+			<ul>
+				{routes.map((route) => (
+					<li className="py-2 text-lg underline">
+						<a key={route.path} href={route.path}>
+							{route.name}
+						</a>
+					</li>
+				))}
+			</ul>
+		</div>
+	)
+}
+
+const router = createBrowserRouter([
+	{
+		path: '/',
+		element: <Home />,
+	},
+	...routes,
 ])
 
 export function Router() {

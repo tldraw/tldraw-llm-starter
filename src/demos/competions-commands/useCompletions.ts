@@ -44,6 +44,8 @@ export function useCompletions() {
 		return await new Promise<void>((resolve) => {
 			const stream = openai.beta.chat.completions.stream({
 				model: 'gpt-4',
+				seed: 42, // deterministic seed for reproducibility
+				temperature: 0.1, // less randomness
 				messages: [
 					{
 						role: 'user',
