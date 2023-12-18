@@ -15,10 +15,11 @@ export interface RunState {
 	readonly stateByScenario: { readonly [key: string]: RunScenarioState }
 }
 
+export type RunAssistantState = 'waiting' | 'running' | 'done' | 'error'
 export interface RunScenarioState {
-	readonly assistant1State: 'waiting' | 'running' | 'done' | 'error'
+	readonly assistant1State: RunAssistantState
 	readonly assistant1UserMessage: string | null
-	readonly assistant2State: 'waiting' | 'running' | 'done' | 'error'
+	readonly assistant2State: RunAssistantState
 	readonly assistant2UserMessage: string | null
 }
 
@@ -90,5 +91,25 @@ export function summarizeRun(state: SandboxState) {
 		completed,
 		succeeded,
 		failed,
+		isDone: completed === total,
 	}
+}
+
+export function isRunningState(state: RunAssistantState) {
+	return state === 'running' || state === 'waiting'
+}
+
+export function isScenarioRunInProgress(state: SandboxState, key: string) {
+	if (!state.run) return false
+	const scenario = state.run.stateByScenario[key]
+	if (!scenario) return false
+	return isRunningState(scenario.assistant1State) || isRunningState(scenario.assistant2State)
+}
+
+export function isRunInProgress(state: SandboxState) {
+	if (!state.run) return false
+	for (const key of Object.keys(state.run.stateByScenario)) {
+		if (isScenarioRunInProgress(state, key)) return true
+	}
+	return false
 }

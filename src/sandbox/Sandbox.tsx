@@ -10,6 +10,7 @@ import {
 } from '@tldraw/tldraw'
 import classNames from 'classnames'
 import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ConcurrencyLimiter } from '../lib/ConcurrencyLimiter'
 import { Spinner } from '../lib/Spinner'
 import { fetchText } from '../lib/fetchText'
 import { UpdateAction, UpdateFn, applyUpdateWithin, assert, randomId } from '../lib/utils'
@@ -18,12 +19,18 @@ import {
 	AssistantInfo,
 	AssistantState,
 	PreparingScenarioState,
+	ReadyScenarioState,
 	RunScenarioState,
 	SandboxState,
 	ScenarioState,
+	isRunInProgress,
+	isRunningState,
+	isScenarioRunInProgress,
 	summarizeRun,
 } from './SandboxState'
 import { sandboxAssistants } from './sandboxAssistants'
+
+const concurrencyLimiter = new ConcurrencyLimiter(3)
 
 export default function Sandbox() {
 	const [state, setState] = useState<SandboxState | null>(null)
@@ -102,6 +109,87 @@ function SandboxReady({
 
 	const runStats = summarizeRun(sandbox)
 
+	async function onRunScenario(key: string, scenario: ScenarioState) {
+		if (!isReady) return
+		assert(scenario.type === 'ready')
+		if (isScenarioRunInProgress(sandbox, key)) return
+
+		setSandbox((sandbox) => {
+			if (isRunInProgress(sandbox)) return sandbox
+			return {
+				...sandbox,
+				run: {
+					type: 'some',
+					stateByScenario: {},
+				},
+			}
+		})
+
+		const updateRunForScenario = getScenarioRunUpdater(setSandbox, key)
+
+		updateRunForScenario({
+			assistant1State: 'waiting',
+			assistant1UserMessage: null,
+			assistant2State: 'waiting',
+			assistant2UserMessage: null,
+		})
+
+		if (!sandbox.run) {
+			await sandbox.assistant1.state.assistant.setSystemPrompt(
+				sandbox.assistant1.state.systemPrompt
+			)
+			await sandbox.assistant2.state.assistant.setSystemPrompt(
+				sandbox.assistant2.state.systemPrompt
+			)
+		}
+
+		await runScenario(scenario, sandbox, updateRunForScenario)
+	}
+
+	async function onRunAllScenarios() {
+		if (!isReady) return
+		if (isRunInProgress(sandbox)) return
+
+		const readyScenarios = Object.entries(sandbox.scenarios).filter(
+			(entry): entry is [string, ReadyScenarioState] => entry[1].type === 'ready'
+		)
+
+		setSandbox((sandbox) => {
+			return {
+				...sandbox,
+				run: {
+					type: 'all',
+					stateByScenario: Object.fromEntries(
+						readyScenarios.map(([key]) => [
+							key,
+							{
+								assistant1State: 'waiting',
+								assistant1UserMessage: null,
+								assistant2State: 'waiting',
+								assistant2UserMessage: null,
+							},
+						])
+					),
+				},
+			}
+		})
+
+		if (!sandbox.run) {
+			await sandbox.assistant1.state.assistant.setSystemPrompt(
+				sandbox.assistant1.state.systemPrompt
+			)
+			await sandbox.assistant2.state.assistant.setSystemPrompt(
+				sandbox.assistant2.state.systemPrompt
+			)
+		}
+
+		await Promise.all(
+			readyScenarios.map(async ([key, scenario]) => {
+				await runScenario(scenario, sandbox, getScenarioRunUpdater(setSandbox, key))
+			})
+		)
+	}
+
 	return (
 		<>
 			<div className="p-3 border-b flex items-center justify-between sticky top-0 bg-white z-10">
@@ -112,11 +200,14 @@ function SandboxReady({
 						{runStats.completed}/{runStats.total}
 					</div>
 				)}
-				{/* {isReady && (
-					<button className="px-2 bg-white hover:bg-gray-50 cursor-pointer rounded-full border border-gray-100 shadow-sm">
+				{isReady && !isRunInProgress(sandbox) && (
+					<button
+						className="px-2 bg-white hover:bg-gray-50 cursor-pointer rounded-full border border-gray-100 shadow-sm ml-3"
+						onClick={onRunAllScenarios}
+					>
 						run all
 					</button>
-				)} */}
+				)}
 			</div>
 			<div className="grid grid-cols-3 col-span-3 gap-4 border-b p-3">
 				<div className="flex flex-col gap-3">
@@ -178,99 +269,74 @@ function SandboxReady({
 							}
 							areAssistantsReady={areAssistantsReady}
 							runState={sandbox.run?.stateByScenario[key] ?? null}
-							onRun={async () => {
-								if (!isReady) return
-								assert(scenario.type === 'ready')
-								if (sandbox.run && sandbox.run.stateByScenario[key]) return
-
-								setSandbox((sandbox) => {
-									if (sandbox.run) return sandbox
-									return {
-										...sandbox,
-										run: {
-											type: 'some',
-											stateByScenario: {},
-										},
-									}
-								})
-
-								const updateRun = (update: UpdateAction<RunScenarioState>) => {
-									return setSandbox((sandbox) =>
-										applyUpdateWithin(sandbox, 'run', (run) => {
-											assert(run)
-											return applyUpdateWithin(run, 'stateByScenario', (stateByScenario) =>
-												applyUpdateWithin(stateByScenario, key, update)
-											)
-										})
-									)
-								}
-
-								updateRun({
-									assistant1State: 'waiting',
-									assistant1UserMessage: null,
-									assistant2State: 'waiting',
-									assistant2UserMessage: null,
-								})
-
-								if (!sandbox.run) {
-									await sandbox.assistant1.state.assistant.setSystemPrompt(
-										sandbox.assistant1.state.systemPrompt
-									)
-									await sandbox.assistant2.state.assistant.setSystemPrompt(
-										sandbox.assistant2.state.systemPrompt
-									)
-								}
-
-								const assistant1Promise = (async () => {
-									assert(scenario.editor1)
-									try {
-										const thread = await sandbox.assistant1.state.assistant.createThread(
-											scenario.editor1
-										)
-										const userMessage = thread.getUserMessage(scenario.prompt)
-										updateRun((prev) => ({
-											...prev,
-											assistant1State: 'running',
-											assistant1UserMessage: userMessage,
-										}))
-										const response = await thread.sendMessage(userMessage)
-										await thread.handleAssistantResponse(response)
-										updateRun((prev) => ({ ...prev, assistant1State: 'done' }))
-									} catch (e) {
-										console.log(e)
-										updateRun((prev) => ({ ...prev, assistant1State: 'error' }))
-									}
-								})()
-
-								const assistant2Promise = (async () => {
-									assert(scenario.editor2)
-									try {
-										const thread = await sandbox.assistant1.state.assistant.createThread(
-											scenario.editor2
-										)
-										const userMessage = thread.getUserMessage(scenario.prompt)
-										updateRun((prev) => ({
-											...prev,
-											assistant2State: 'running',
-											assistant2UserMessage: userMessage,
-										}))
-										const response = await thread.sendMessage(userMessage)
-										await thread.handleAssistantResponse(response)
-										updateRun((prev) => ({ ...prev, assistant2State: 'done' }))
-									} catch (e) {
-										console.log(e)
-										updateRun((prev) => ({ ...prev, assistant2State: 'error' }))
-									}
-								})()
-
-								await Promise.all([assistant1Promise, assistant2Promise])
-							}}
+							onRun={async () => onRunScenario(key, scenario)}
 						/>
 					)
 				})}
 			</div>
 		</>
 	)
+}
+
+function getScenarioRunUpdater(setSandbox: UpdateFn<SandboxState>, key: string) {
+	return (update: UpdateAction<RunScenarioState>) => {
+		return setSandbox((sandbox) =>
+			applyUpdateWithin(sandbox, 'run', (run) => {
+				if (!run) return run
+				return applyUpdateWithin(run, 'stateByScenario', (stateByScenario) =>
+					applyUpdateWithin(stateByScenario, key, update)
+				)
+			})
+		)
+	}
+}
+
+async function runScenario(
+	scenario: ReadyScenarioState,
+	sandbox: SandboxState,
+	updateRun: (update: UpdateAction<RunScenarioState>) => void
+) {
+	await concurrencyLimiter.run(async () => {
+		const assistant1Promise = (async () => {
+			assert(scenario.editor1)
+			try {
+				const thread = await sandbox.assistant1.state.assistant.createThread(scenario.editor1)
+				const userMessage = thread.getUserMessage(scenario.prompt)
+				updateRun((prev) => ({
+					...prev,
+					assistant1State: 'running',
+					assistant1UserMessage: userMessage,
+				}))
+				const response = await thread.sendMessage(userMessage)
+				await thread.handleAssistantResponse(response)
+				updateRun((prev) => ({ ...prev, assistant1State: 'done' }))
+			} catch (e) {
+				console.log(e)
+				updateRun((prev) => ({ ...prev, assistant1State: 'error' }))
+			}
+		})()
+
+		const assistant2Promise = (async () => {
+			assert(scenario.editor2)
+			try {
+				const thread = await sandbox.assistant1.state.assistant.createThread(scenario.editor2)
+				const userMessage = thread.getUserMessage(scenario.prompt)
+				updateRun((prev) => ({
+					...prev,
+					assistant2State: 'running',
+					assistant2UserMessage: userMessage,
+				}))
+				const response = await thread.sendMessage(userMessage)
+				await thread.handleAssistantResponse(response)
+				updateRun((prev) => ({ ...prev, assistant2State: 'done' }))
+			} catch (e) {
+				console.log(e)
+				updateRun((prev) => ({ ...prev, assistant2State: 'error' }))
+			}
+		})()
+
+		await Promise.all([assistant1Promise, assistant2Promise])
+	})
 }
 
 function AssistantSettings({
@@ -375,29 +441,30 @@ function Scenario({
 
 	const isRunning =
 		!!runState &&
-		(runState.assistant1State === 'running' ||
-			runState.assistant2State === 'running' ||
-			runState.assistant1State === 'waiting' ||
-			runState.assistant2State === 'waiting')
+		(isRunningState(runState.assistant1State) || isRunningState(runState.assistant2State))
+
+	const canRun = isFullyReady && !isRunning
 
 	return (
 		<>
-			<div className="col-span-3 pt-3 flex justify-start items-center gap-3">
-				<h3 className="font-semibold">{scenario.name}.tldr</h3>
+			<div className="flex flex-col gap-1 pt-2">
+				<div className="flex items-center gap-3 justify-between">
+					<h3 className="font-semibold">{scenario.name}.tldr</h3>
+					<button
+						className="px-2 bg-white hover:bg-gray-50 cursor-pointer rounded-full border border-gray-100 shadow-sm disabled:opacity-50 disabled:pointer-events-none"
+						onClick={canRun ? onRun : undefined}
+						disabled={!canRun}
+					>
+						run
+					</button>
+				</div>
 				{scenario.type !== 'preparing' && (
-					<>
-						<div className="font-light text-gray-600">“{scenario.prompt}”</div>
-						{isFullyReady && !isRunning && (
-							<button
-								className="px-2 bg-white hover:bg-gray-50 cursor-pointer rounded-full ml-auto border border-gray-100 shadow-sm"
-								onClick={onRun}
-							>
-								run
-							</button>
-						)}
-					</>
+					<div className="font-light text-gray-600 mr-auto">“{scenario.prompt}”</div>
 				)}
 			</div>
+			<div className="flex items-end justify-center">{runState?.assistant1State}</div>
+			<div className="flex items-end justify-center">{runState?.assistant2State}</div>
+
 			<Container>
 				<MiniTldraw
 					store={inputStore}
