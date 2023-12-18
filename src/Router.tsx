@@ -15,7 +15,7 @@ const routes = [
 	},
 	{
 		name: 'OpenAI Assistant',
-		path: '/function-calling',
+		path: '/commands',
 		element: <CommandsDemo />,
 	},
 	{

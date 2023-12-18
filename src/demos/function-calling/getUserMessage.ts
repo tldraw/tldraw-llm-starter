@@ -1,10 +1,13 @@
 import { Editor, TLDrawShape, TLGeoShape, TLTextShape } from '@tldraw/tldraw'
 
 export function getUserMessage(editor: Editor, prompt: string) {
-	return prompt
+	return `
+${getCurrentViewportDescription(editor)}
+${getCurrentPageDescription(editor)}
+${prompt}`
 }
 
-export function getCurrentViewportDescription(editor: Editor) {
+function getCurrentViewportDescription(editor: Editor) {
 	const { midX, midY, w, h } = editor.getViewportPageBounds()
 
 	let result = ''
@@ -16,7 +19,7 @@ export function getCurrentViewportDescription(editor: Editor) {
 	return result
 }
 
-export function getCurrentPageDescription(editor: Editor) {
+function getCurrentPageDescription(editor: Editor) {
 	const shapes = editor.getCurrentPageShapesSorted()
 
 	if (!shapes.length) return 'There are no shapes on the page.'
