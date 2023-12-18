@@ -9,9 +9,10 @@ import {
 	transact,
 } from '@tldraw/tldraw'
 import classNames from 'classnames'
-import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ComponentType, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Spinner } from '../components/Spinner'
+import { X } from '../components/X'
 import { ConcurrencyLimiter } from '../lib/ConcurrencyLimiter'
-import { Spinner } from '../lib/Spinner'
 import { fetchText } from '../lib/fetchText'
 import { UpdateAction, UpdateFn, applyUpdateWithin, assert, randomId } from '../lib/utils'
 import { scenarios } from '../scenarios/0_scenarios'
@@ -20,6 +21,7 @@ import {
 	AssistantState,
 	PreparingScenarioState,
 	ReadyScenarioState,
+	RunAssistantState,
 	RunScenarioState,
 	SandboxState,
 	ScenarioState,
@@ -98,6 +100,7 @@ function SandboxReady({
 	sandbox: SandboxState
 	setSandbox: UpdateFn<SandboxState>
 }) {
+	console.log(sandbox)
 	const areScenariosReady = sandbox.order.every((key) => {
 		const scenario = sandbox.scenarios[key]
 		return scenario.type === 'ready' && scenario.editor1 && scenario.editor2
@@ -130,8 +133,10 @@ function SandboxReady({
 		updateRunForScenario({
 			assistant1State: 'waiting',
 			assistant1UserMessage: null,
+			assistant1Output: null,
 			assistant2State: 'waiting',
 			assistant2UserMessage: null,
+			assistant2Output: null,
 		})
 
 		if (!sandbox.run) {
@@ -165,8 +170,10 @@ function SandboxReady({
 							{
 								assistant1State: 'waiting',
 								assistant1UserMessage: null,
+								assistant1Output: null,
 								assistant2State: 'waiting',
 								assistant2UserMessage: null,
+								assistant2Output: null,
 							},
 						])
 					),
@@ -259,17 +266,11 @@ function SandboxReady({
 					return (
 						<Scenario
 							key={key}
-							scenario={scenario}
-							setScenario={(update: UpdateAction<ScenarioState>) =>
-								setSandbox((prevSandbox) =>
-									applyUpdateWithin(prevSandbox, 'scenarios', (prevScenarios) =>
-										applyUpdateWithin(prevScenarios, key, update)
-									)
-								)
-							}
+							scenarioKey={key}
 							areAssistantsReady={areAssistantsReady}
-							runState={sandbox.run?.stateByScenario[key] ?? null}
 							onRun={async () => onRunScenario(key, scenario)}
+							setSandbox={setSandbox}
+							sandbox={sandbox}
 						/>
 					)
 				})}
@@ -308,6 +309,7 @@ async function runScenario(
 					assistant1UserMessage: userMessage,
 				}))
 				const response = await thread.sendMessage(userMessage)
+				updateRun((prev) => ({ ...prev, assistant1Output: response }))
 				await thread.handleAssistantResponse(response)
 				updateRun((prev) => ({ ...prev, assistant1State: 'done' }))
 			} catch (e) {
@@ -319,7 +321,7 @@ async function runScenario(
 		const assistant2Promise = (async () => {
 			assert(scenario.editor2)
 			try {
-				const thread = await sandbox.assistant1.state.assistant.createThread(scenario.editor2)
+				const thread = await sandbox.assistant2.state.assistant.createThread(scenario.editor2)
 				const userMessage = thread.getUserMessage(scenario.prompt)
 				updateRun((prev) => ({
 					...prev,
@@ -327,6 +329,7 @@ async function runScenario(
 					assistant2UserMessage: userMessage,
 				}))
 				const response = await thread.sendMessage(userMessage)
+				updateRun((prev) => ({ ...prev, assistant2Output: response }))
 				await thread.handleAssistantResponse(response)
 				updateRun((prev) => ({ ...prev, assistant2State: 'done' }))
 			} catch (e) {
@@ -415,18 +418,26 @@ function AssistantSettings({
 }
 
 function Scenario({
-	scenario,
-	setScenario,
+	scenarioKey: key,
 	areAssistantsReady,
 	onRun,
-	runState,
+	sandbox,
+	setSandbox,
 }: {
-	scenario: ScenarioState
-	setScenario: UpdateFn<ScenarioState>
+	scenarioKey: string
 	areAssistantsReady: boolean
 	onRun: () => void
-	runState: null | RunScenarioState
+	sandbox: SandboxState
+	setSandbox: UpdateFn<SandboxState>
 }) {
+	const scenario = sandbox.scenarios[key]
+	const setScenario = (update: UpdateAction<ScenarioState>) =>
+		setSandbox((prevSandbox) =>
+			applyUpdateWithin(prevSandbox, 'scenarios', (prevScenarios) =>
+				applyUpdateWithin(prevScenarios, key, update)
+			)
+		)
+
 	const inputStore = useMemo(() => {
 		const parsed = parseTldrawJsonFile({
 			json: scenario.fileContents,
@@ -435,6 +446,8 @@ function Scenario({
 		if (!parsed.ok) throw new Error(`File parse error: ${JSON.stringify(parsed.error)}`)
 		return parsed.value
 	}, [scenario.fileContents])
+
+	const runState = sandbox.run?.stateByScenario[key] ?? null
 
 	const isFullyReady =
 		scenario.type === 'ready' && scenario.editor1 && scenario.editor2 && areAssistantsReady
@@ -462,8 +475,18 @@ function Scenario({
 					<div className="font-light text-gray-600 mr-auto">“{scenario.prompt}”</div>
 				)}
 			</div>
-			<div className="flex items-end justify-center">{runState?.assistant1State}</div>
-			<div className="flex items-end justify-center">{runState?.assistant2State}</div>
+			<PreviewInfo
+				state={runState?.assistant1State}
+				input={runState?.assistant1UserMessage}
+				output={runState?.assistant1Output}
+				assistantIndex={sandbox.assistant1.index}
+			/>
+			<PreviewInfo
+				state={runState?.assistant2State}
+				input={runState?.assistant2UserMessage}
+				output={runState?.assistant2Output}
+				assistantIndex={sandbox.assistant2.index}
+			/>
 
 			<Container>
 				<MiniTldraw
@@ -521,6 +544,63 @@ function Scenario({
 				/>
 			</Container>
 		</>
+	)
+}
+
+function PreviewInfo({
+	state,
+	input,
+	output,
+	assistantIndex,
+}: {
+	state?: RunAssistantState
+	input?: string | null
+	output?: unknown
+	assistantIndex: number
+}) {
+	const dialogRef = useRef<HTMLDialogElement | null>(null)
+	const GptOutput = sandboxAssistants[assistantIndex].GptOutput as ComponentType<{
+		output: unknown
+	}>
+	return (
+		<div className="flex items-end">
+			{state && (
+				<div className="flex items-center justify-center flex-auto">
+					<div className="flex-auto text-center">{state}</div>
+					<button
+						className="text-gray-500 font-serif italic rounded-full border aspect-square w-6"
+						onClick={() => {
+							return dialogRef.current?.showModal()
+						}}
+					>
+						i
+					</button>
+					<dialog ref={dialogRef} className="w-96 rounded-lg bg-white shadow-xl">
+						<div className="flex items-center justify-between p-3 border-b">
+							<h4 className="font-semibold text-lg">Run details</h4>
+							<button
+								className="text-gray-500 rounded-full border aspect-square w-6 flex items-center justify-center"
+								onClick={() => dialogRef.current?.close()}
+							>
+								<X />
+							</button>
+						</div>
+						<div className="p-3 flex items-start flex-col">
+							<div className="text-gray-500 font-semibold uppercase tracking-wider text-sm pb-1 flex-none">
+								Input
+							</div>
+							<div className="whitespace-pre-wrap">{input ? input : <Spinner />}</div>
+							<div className="text-gray-500 font-semibold uppercase tracking-wider text-sm pt-3 flex-none">
+								Output
+							</div>
+							<div className="whitespace-pre-wrap">
+								{output ? <GptOutput output={output} /> : <Spinner />}
+							</div>
+						</div>
+					</dialog>
+				</div>
+			)}
+		</div>
 	)
 }
 

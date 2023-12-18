@@ -182,7 +182,11 @@ const tools: AssistantUpdateParams['tools'] = [
 	},
 ]
 
-export class OpenAiWithFunctionCallingAssistant implements Assistant<undefined> {
+type Message =
+	| { type: 'text'; text: string }
+	| { type: 'fn'; name: string; args: unknown; output: unknown }
+
+export class OpenAiWithFunctionCallingAssistant implements Assistant<Message[]> {
 	constructor() {}
 
 	getDefaultSystemPrompt(): Promise<string> {
@@ -203,7 +207,7 @@ export class OpenAiWithFunctionCallingAssistant implements Assistant<undefined> 
 	}
 }
 
-export class OpenAiWithFunctionCallingThread implements Thread<undefined> {
+export class OpenAiWithFunctionCallingThread implements Thread<Message[]> {
 	constructor(
 		readonly thread: OpenAI.Beta.Threads.Thread,
 		readonly editor: Editor
@@ -232,15 +236,22 @@ export class OpenAiWithFunctionCallingThread implements Thread<undefined> {
 		const runId = run.id
 		this.current.run = run
 
+		const resultMessages: Message[] = []
+		const ogPush = resultMessages.push
+		resultMessages.push = (...args) => {
+			console.trace('resultMessages.push', args)
+			return ogPush.call(resultMessages, ...args)
+		}
+
 		// eslint-disable-next-line no-constant-condition
-		while (true) {
+		loop: while (true) {
 			await delayMs(500)
 			const currentRun = await openai.beta.threads.runs.retrieve(this.thread.id, runId)
 
 			switch (currentRun.status) {
 				case 'in_progress':
 				case 'queued':
-					continue
+					continue loop
 				case 'requires_action': {
 					const toolCalls = currentRun.required_action?.submit_tool_outputs?.tool_calls
 					assert(toolCalls)
@@ -256,17 +267,21 @@ export class OpenAiWithFunctionCallingThread implements Thread<undefined> {
 
 						console.log(`calling ${name} with arguments: ${call.function.arguments}`)
 
+						let args
+						if (call.function.arguments) {
+							args = JSON.parse(call.function.arguments)
+						}
+						let output
+
 						switch (name) {
 							case 'getCurrentViewport': {
 								const page = getCurrentViewportDescription(this.editor)
-								toolOutputs.push({
-									tool_call_id: id,
-									output: JSON.stringify(page.toJson()),
-								})
+								output = page.toJson()
 								break
 							}
 							case 'getCurrentPage': {
 								const page = getCurrentPageDescription(this.editor)
+								output = page
 								toolOutputs.push({
 									tool_call_id: id,
 									output: page,
@@ -274,71 +289,49 @@ export class OpenAiWithFunctionCallingThread implements Thread<undefined> {
 								break
 							}
 							case 'getCurrentPointer': {
-								const { x, y } = getCurrentPointer(this.editor)
-								toolOutputs.push({
-									tool_call_id: id,
-									output: JSON.stringify({ x, y }),
-								})
+								output = getCurrentPointer(this.editor)
 								break
 							}
 							case 'pointerMove': {
-								await pointerMove(this.editor, JSON.parse(call.function.arguments))
-								toolOutputs.push({
-									tool_call_id: id,
-									output: 'success',
-								})
+								await pointerMove(this.editor, args)
+								output = 'success'
 								break
 							}
 							case 'pointerDown': {
 								await pointerDown(this.editor)
-								toolOutputs.push({
-									tool_call_id: id,
-									output: 'success',
-								})
+								output = 'success'
 								break
 							}
 							case 'pointerUp': {
 								await pointerUp(this.editor)
-								toolOutputs.push({
-									tool_call_id: id,
-									output: 'success',
-								})
+								output = 'success'
 								break
 							}
 							case 'selectTool': {
-								selectTool(this.editor, JSON.parse(call.function.arguments))
-								toolOutputs.push({
-									tool_call_id: id,
-									output: 'success',
-								})
+								selectTool(this.editor, args)
+								output = 'success'
 								break
 							}
 							case 'placeText': {
-								placeText(this.editor, JSON.parse(call.function.arguments))
-								toolOutputs.push({
-									tool_call_id: id,
-									output: 'success',
-								})
+								placeText(this.editor, args)
+								output = 'success'
 								break
 							}
-							case 'startShape': {
-								toolOutputs.push({
-									tool_call_id: id,
-									output: 'ok',
-								})
-								break
-							}
+							case 'startShape':
 							case 'endShape': {
-								toolOutputs.push({
-									tool_call_id: id,
-									output: 'ok',
-								})
+								output = 'ok'
 								break
 							}
 							default: {
 								throw new Error(`Unknown tool call: ${name}`)
 							}
 						}
+
+						toolOutputs.push({
+							tool_call_id: id,
+							output: JSON.stringify(output),
+						})
+						resultMessages.push({ type: 'fn', name, args, output })
 					}
 
 					await openai.beta.threads.runs.submitToolOutputs(this.thread.id, currentRun.id, {
@@ -354,13 +347,15 @@ export class OpenAiWithFunctionCallingThread implements Thread<undefined> {
 					for (const content of mostRecent.content) {
 						if (content.type === 'text') {
 							results.push(content.text.value)
+							resultMessages.push({ type: 'text', text: content.text.value })
 						}
 					}
 
 					console.log(results.join('\n\n'))
 
 					this.current = null
-					return undefined
+					console.log(resultMessages)
+					return resultMessages
 				}
 				default:
 					this.current = null

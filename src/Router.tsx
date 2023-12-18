@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { Spinner } from './lib/Spinner'
+import { Spinner } from './components/Spinner'
 
 const CommandsDemo = lazy(() => import('./demos/commands/CommandsDemo'))
 const CompletionsDemo = lazy(() => import('./demos/competions-commands/CompletionsDemo'))

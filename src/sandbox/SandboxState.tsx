@@ -19,8 +19,10 @@ export type RunAssistantState = 'waiting' | 'running' | 'done' | 'error'
 export interface RunScenarioState {
 	readonly assistant1State: RunAssistantState
 	readonly assistant1UserMessage: string | null
+	readonly assistant1Output: any | null
 	readonly assistant2State: RunAssistantState
 	readonly assistant2UserMessage: string | null
+	readonly assistant2Output: any | null
 }
 
 export interface AssistantInfo {

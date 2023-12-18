@@ -6,8 +6,8 @@ import {
 } from '@tldraw/tldraw'
 import { useCallback, useEffect, useState } from 'react'
 import { Assistant, Thread } from '../Assistant'
-import { Spinner } from '../lib/Spinner'
 import { assert } from '../lib/utils'
+import { Spinner } from './Spinner'
 
 function useAssistant<T>(assistant: Assistant<T>) {
 	const editor = useEditor()
