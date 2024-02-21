@@ -87,6 +87,61 @@ const finiteAvailableCommands = [
 			},
 		],
 	},
+	{
+		name: 'TEXT',
+		description: 'Create text (left aligned) at the given point.',
+		parameters: [
+			{
+				name: 'x',
+				type: 'number',
+				description: 'The x coordinate of the new pointer position.',
+			},
+			{
+				name: 'y',
+				type: 'number',
+				description: 'The y coordinate of the new pointer position.',
+			},
+			{
+				name: 'text',
+				type: 'string',
+			},
+		],
+	},
+	{
+		name: 'RECTANGLE',
+		description: 'Create a rectangle at the given coordinates',
+		parameters: [
+			{
+				name: 'x',
+				type: 'number',
+				description: 'The x coordinate of the shape (top left corner).',
+			},
+			{
+				name: 'y',
+				type: 'number',
+				description: 'The y coordinate of the shape (top left corner).',
+			},
+			{
+				name: 'w',
+				type: 'number',
+				description: 'The width of the shape.',
+			},
+			{
+				name: 'h',
+				type: 'number',
+				description: 'The height of the shape.',
+			},
+			{
+				name: 'color',
+				type: 'string',
+				description: 'The color of the shape.',
+			},
+			{
+				name: 'text',
+				type: 'string',
+			},
+		],
+	},
 ]
 ```
 
@@ -155,6 +210,20 @@ POINTER UP;
 POINTER_MOVE 500 500;
 POINTER DOWN;
 POINTER UP;
+```
+
+## Text tool
+
+You can use the "text" tool to create text on the canvas.
+
+For example, the following sequence will add the text "Hello" at (0,0).
+
+```sequence
+TEXT 0 0 Hello;
+```
+
+```sequence
+TEXT 0 0 Hello world! This is a long label;
 ```
 
 ## Draw tool

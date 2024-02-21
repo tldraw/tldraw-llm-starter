@@ -1,5 +1,13 @@
 import { Editor } from '@tldraw/tldraw'
-import { pointerDown, pointerMove, pointerMoveTo, pointerUp, selectTool } from './functions'
+import {
+	createRectangleShape,
+	createTextShape,
+	pointerDown,
+	pointerMove,
+	pointerMoveTo,
+	pointerUp,
+	selectTool,
+} from './functions'
 
 const commands = [
 	{
@@ -86,6 +94,60 @@ const commands = [
 				name: 'tool',
 				type: 'string',
 				enum: ['select', 'draw', 'box', 'ellipse', 'arrow'],
+			},
+		],
+	},
+	{
+		keyword: 'TEXT',
+		description: 'Create text (left aligned) at the given point.',
+		parameters: [
+			{
+				name: 'x',
+				type: 'number',
+				description: 'The x coordinate of the text.',
+			},
+			{
+				name: 'y',
+				type: 'number',
+				description: 'The y coordinate of the text.',
+			},
+			{
+				name: 'text',
+				type: 'string',
+			},
+		],
+	},
+	{
+		keyword: 'RECTANGLE',
+		description: 'Create a rectangle at the given coordinates',
+		parameters: [
+			{
+				name: 'x',
+				type: 'number',
+				description: 'The x coordinate of the shape (top left corner).',
+			},
+			{
+				name: 'y',
+				type: 'number',
+				description: 'The y coordinate of the shape (top left corner).',
+			},
+			{
+				name: 'w',
+				type: 'number',
+				description: 'The width of the shape.',
+			},
+			{
+				name: 'h',
+				type: 'number',
+				description: 'The height of the shape.',
+			},
+			{
+				name: 'color',
+				type: 'string',
+			},
+			{
+				name: 'text',
+				type: 'string',
 			},
 		],
 	},
@@ -240,6 +302,16 @@ export class EditorDriverApi {
 		console.log([name, ...params].join(' '))
 
 		switch (name) {
+			case 'TEXT': {
+				const [x, y, text] = params as [number, number, string]
+				createTextShape(this.editor, x, y, text)
+				break
+			}
+			case 'RECTANGLE': {
+				const [x, y, w, h, color, text] = params as [number, number, number, number, string, string]
+				createRectangleShape(this.editor, x, y, w, h, color, text)
+				break
+			}
 			case 'POINTER_DOWN': {
 				pointerDown(this.editor)
 				break

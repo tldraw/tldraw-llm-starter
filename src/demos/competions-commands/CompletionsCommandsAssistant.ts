@@ -63,7 +63,8 @@ export class CompletionCommandsThread implements Thread<ChatCompletionStream> {
 
 	async sendMessage(userMessage: string) {
 		if (this.currentStream) {
-			throw Error(`Error: already sending message`)
+			this.messages.pop()
+			await this.cancel()
 		}
 
 		this.messages.push({
@@ -113,19 +114,23 @@ export class CompletionCommandsThread implements Thread<ChatCompletionStream> {
 					content: snapshot,
 				})
 				resolve()
+				this.currentStream = null
 			})
 
 			stream.on('abort', () => {
 				reject(new Error('Stream aborted'))
+				this.currentStream = null
 			})
 
 			stream.on('error', (err) => {
 				console.error(err)
 				reject(err)
+				this.currentStream = null
 			})
 
 			stream.on('end', () => {
 				resolve()
+				this.currentStream = null
 			})
 		})
 	}

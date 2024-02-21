@@ -247,3 +247,46 @@ export function selectTool(editor: Editor, { tool }: { tool: string }) {
 		}
 	}
 }
+
+export async function createTextShape(editor: Editor, x: number, y: number, ...text: string[]) {
+	editor.createShape<TLTextShape>({
+		id: createShapeId(),
+		type: 'text',
+		x,
+		y: y - 12,
+		props: {
+			size: 'm',
+			text: text.join(' '),
+			align: 'start',
+		},
+	})
+	await waitFrame()
+}
+
+export async function createRectangleShape(
+	editor: Editor,
+	x: number,
+	y: number,
+	w: number,
+	h: number,
+	color: string,
+	...text: string[]
+) {
+	editor.createShape<TLGeoShape>({
+		id: createShapeId(),
+		type: 'geo',
+		x,
+		y,
+		props: {
+			geo: 'rectangle',
+			w,
+			h,
+			size: 'm',
+			text: text.join(' '),
+			color: color as any,
+			align: 'middle',
+			verticalAlign: 'middle',
+		},
+	})
+	await waitFrame()
+}
