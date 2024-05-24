@@ -96,13 +96,17 @@ export function getCurrentPageDescription(editor: Editor) {
 	return result
 }
 
-export async function pointerMoveTo(editor: Editor, { x, y }: { x: number; y: number }) {
-	const current = editor.inputs.currentScreenPoint.toJson()
-	const next = editor.pageToScreen({ x, y })
-	const steps = 8
+export async function pointerMoveTo(
+	editor: Editor,
+	from: { x: number; y: number },
+	to: { x: number; y: number }
+) {
+	const steps = 12
+	const _from = editor.pageToScreen(from)
+	const _to = editor.pageToScreen(to)
 
-	for (let i = 0; i < steps; i++) {
-		const point = Vec2d.Lrp(current, next, i / (steps - 1))
+	for (let i = 1; i <= steps; i++) {
+		const point = Vec2d.Lrp(_from, _to, i / steps)
 		editor.dispatch({
 			...getPointerEvent(editor),
 			name: 'pointer_move',

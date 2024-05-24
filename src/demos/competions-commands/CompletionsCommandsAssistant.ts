@@ -1,10 +1,10 @@
-import { Editor } from '@tldraw/tldraw'
+import { Editor, Vec2d } from '@tldraw/tldraw'
 import OpenAI from 'openai'
 import { ChatCompletionStream } from 'openai/lib/ChatCompletionStream.mjs'
 import { Assistant, Thread } from '../../Assistant'
 import { fetchText } from '../../lib/fetchText'
 import { assert } from '../../lib/utils'
-import { EditorDriverApi } from './EditorDriverApi'
+import { EditorDriverApi, commands } from './EditorDriverApi'
 import commandsPrompt from './completions-prompt.md'
 import { getUserMessage } from './getUserMessage'
 
@@ -27,7 +27,7 @@ export class CompletionCommandsAssistant implements Assistant<ChatCompletionStre
 	systemPrompt: string | null = null
 
 	getDefaultSystemPrompt(): Promise<string> {
-		return fetchText(commandsPrompt)
+		return fetchText(commandsPrompt.replace('XXX_COMMANDS_XXX', JSON.stringify(commands, null, 2)))
 	}
 
 	async setSystemPrompt(prompt: string) {
@@ -96,7 +96,7 @@ export class CompletionCommandsThread implements Thread<ChatCompletionStream> {
 	async handleAssistantResponse(stream: ChatCompletionStream) {
 		assert(this.currentStream === stream)
 
-		const api = new EditorDriverApi(this.editor)
+		const api = new EditorDriverApi(this.editor, Vec2d.From(this.editor.getCamera()))
 
 		return new Promise<void>((resolve, reject) => {
 			stream.on('content', (_delta, snapshot) => {

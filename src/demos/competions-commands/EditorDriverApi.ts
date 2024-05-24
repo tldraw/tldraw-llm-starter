@@ -1,4 +1,4 @@
-import { Editor } from '@tldraw/tldraw'
+import { Editor, Vec2d } from '@tldraw/tldraw'
 import {
 	createRectangleShape,
 	createTextShape,
@@ -9,33 +9,33 @@ import {
 	selectTool,
 } from './functions'
 
-const commands = [
-	{
-		keyword: 'POINTER_DOWN',
-		description: 'Begin pointing (clicking) with the pointer at its current position on the page.',
-		parameters: [],
-	},
-	{
-		keyword: 'POINTER_UP',
-		description: 'Stop pointing (clicking) the pointer at its current position on the page.',
-		parameters: [],
-	},
-	{
-		keyword: 'POINTER_MOVE',
-		description: 'Move the pointer to a new position on the page.',
-		parameters: [
-			{
-				name: 'x',
-				type: 'number',
-				description: 'The x coordinate of the new pointer position.',
-			},
-			{
-				name: 'y',
-				type: 'number',
-				description: 'The y coordinate of the new pointer position.',
-			},
-		],
-	},
+export const commands = [
+	// {
+	// 	keyword: 'POINTER_DOWN',
+	// 	description: 'Begin pointing (clicking) with the pointer at its current position on the page.',
+	// 	parameters: [],
+	// },
+	// {
+	// 	keyword: 'POINTER_UP',
+	// 	description: 'Stop pointing (clicking) the pointer at its current position on the page.',
+	// 	parameters: [],
+	// },
+	// {
+	// 	keyword: 'POINTER_MOVE',
+	// 	description: 'Move the pointer to a new position on the page.',
+	// 	parameters: [
+	// 		{
+	// 			name: 'x',
+	// 			type: 'number',
+	// 			description: 'The x coordinate of the new pointer position.',
+	// 		},
+	// 		{
+	// 			name: 'y',
+	// 			type: 'number',
+	// 			description: 'The y coordinate of the new pointer position.',
+	// 		},
+	// 	],
+	// },
 	{
 		keyword: 'POINTER_DRAG',
 		description: 'Drag the pointer between two positions on the page.',
@@ -156,7 +156,10 @@ const commands = [
 type CapturedCommand = { command: (typeof commands)[number]; parameters: string[] }
 
 export class EditorDriverApi {
-	constructor(public editor: Editor) {
+	constructor(
+		public editor: Editor,
+		public camera: Vec2d
+	) {
 		editor.updateInstanceState({ isToolLocked: true })
 	}
 
@@ -301,35 +304,42 @@ export class EditorDriverApi {
 
 		console.log([name, ...params].join(' '))
 
+		const { camera } = this
+		const offset = Vec2d.Sub(this.editor.getCamera(), camera)
+
 		switch (name) {
 			case 'TEXT': {
 				const [x, y, text] = params as [number, number, string]
-				createTextShape(this.editor, x, y, text)
+				createTextShape(this.editor, x - offset.x, y - offset.y, text)
 				break
 			}
 			case 'RECTANGLE': {
 				const [x, y, w, h, color, text] = params as [number, number, number, number, string, string]
-				createRectangleShape(this.editor, x, y, w, h, color, text)
+				createRectangleShape(this.editor, x - offset.x, y - offset.y, w, h, color, text)
 				break
 			}
-			case 'POINTER_DOWN': {
-				pointerDown(this.editor)
-				break
-			}
-			case 'POINTER_UP': {
-				pointerUp(this.editor)
-				break
-			}
-			case 'POINTER_MOVE': {
-				const [x, y] = params as [number, number, string]
-				await pointerMoveTo(this.editor, { x, y })
-				break
-			}
+			// case 'POINTER_DOWN': {
+			// 	pointerDown(this.editor)
+			// 	break
+			// }
+			// case 'POINTER_UP': {
+			// 	pointerUp(this.editor)
+			// 	break
+			// }
+			// case 'POINTER_MOVE': {
+			// 	const [x, y] = params as [number, number, string]
+			// 	await pointerMoveTo(this.editor, { x, y })
+			// 	break
+			// }
 			case 'POINTER_DRAG': {
 				const [x1, y1, x2, y2, _modifiers] = params as [number, number, number, number, string]
-				pointerMove(this.editor, { x: x1, y: y1 })
+				pointerMove(this.editor, { x: x1 - offset.x, y: y1 - offset.y })
 				pointerDown(this.editor)
-				await pointerMoveTo(this.editor, { x: x2, y: y2 })
+				await pointerMoveTo(
+					this.editor,
+					{ x: x1 - offset.x, y: y1 - offset.y },
+					{ x: x2 - offset.x, y: y2 - offset.y }
+				)
 				pointerUp(this.editor)
 				break
 			}

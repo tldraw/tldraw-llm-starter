@@ -25,124 +25,7 @@ For example, given point A at (10,500) and point B at (-5,100):
 You have several commands that are available to you:
 
 ```
-const finiteAvailableCommands = [
-	{
-		name: 'POINTER_DOWN',
-		description: 'Begin pointing (clicking) with the pointer at its current position on the page.',
-		parameters: [],
-	},
-	{
-		name: 'POINTER_UP',
-		description: 'Stop pointing (clicking) the pointer at its current position on the page.',
-		parameters: [],
-	},
-	{
-		name: 'POINTER_MOVE',
-		description: 'Move the pointer to a new position on the page.',
-		parameters: [
-			{
-				name: 'x',
-				type: 'number',
-				description: 'The x coordinate of the new pointer position.',
-			},
-			{
-				name: 'y',
-				type: 'number',
-				description: 'The y coordinate of the new pointer position.',
-			},
-		],
-	},
-	{
-		name: 'KEY_DOWN',
-		description: 'Begin holding a key.',
-		parameters: [
-			{
-				name: 'key',
-				type: 'string',
-				enum: ['alt', 'shift', 'control'],
-				description: 'The key to press',
-			},
-		],
-	},
-	{
-		name: 'KEY_UP',
-		description: 'Release a key.',
-		parameters: [
-			{
-				name: 'key',
-				type: 'string',
-				enum: ['alt', 'shift', 'control'],
-				description: 'The key to release',
-			},
-		],
-	},
-	{
-		name: 'TOOL',
-		description: 'Switch to the provided tool.',
-		parameters: [
-			{
-				name: 'tool',
-				type: 'string',
-				enum: ['select', 'draw', 'box', 'star', 'ellipse', 'arrow'],
-			},
-		],
-	},
-	{
-		name: 'TEXT',
-		description: 'Create text (left aligned) at the given point.',
-		parameters: [
-			{
-				name: 'x',
-				type: 'number',
-				description: 'The x coordinate of the new pointer position.',
-			},
-			{
-				name: 'y',
-				type: 'number',
-				description: 'The y coordinate of the new pointer position.',
-			},
-			{
-				name: 'text',
-				type: 'string',
-			},
-		],
-	},
-	{
-		name: 'RECTANGLE',
-		description: 'Create a rectangle at the given coordinates',
-		parameters: [
-			{
-				name: 'x',
-				type: 'number',
-				description: 'The x coordinate of the shape (top left corner).',
-			},
-			{
-				name: 'y',
-				type: 'number',
-				description: 'The y coordinate of the shape (top left corner).',
-			},
-			{
-				name: 'w',
-				type: 'number',
-				description: 'The width of the shape.',
-			},
-			{
-				name: 'h',
-				type: 'number',
-				description: 'The height of the shape.',
-			},
-			{
-				name: 'color',
-				type: 'string',
-				description: 'The color of the shape.',
-			},
-			{
-				name: 'text',
-				type: 'string',
-			},
-		],
-	},
-]
+const finiteAvailableCommands = XXX_COMMANDS_XXX
 ```
 
 ## Calling commands
@@ -154,15 +37,7 @@ TOOL draw;
 ```
 
 ```
-POINTER_MOVE 100 200;
-```
-
-```
-POINTER_DOWN;
-```
-
-```
-POINTER_UP;
+POINTER_DRAG 100 200 150 200;
 ```
 
 ## Sequences
@@ -171,10 +46,7 @@ A sequence of commands looks like this:
 
 ```sequence
 TOOL draw;
-POINTER_MOVE 100 200;
-POINTER_DOWN;
-POINTER_MOVE 200 400;
-POINTER_UP;
+POINTER_DRAG 100 200 150 200;
 ```
 
 ## Viewport
@@ -183,61 +55,15 @@ The user's viewport represents which part of the user's current page is visible 
 
 ### Tools
 
-## Select tool
-
-The "select" tool can be used to select. To select a shape, select the select tool (`TOOL select;`), then move your pointer to the center of the shape (e.g. `POINTER_MOVE 50 50;`), then click the shape (`POINTER DOWN; POINTER UP;`).
-
-You can deselect a shape by moving your cursor to an empty space on the canvas and clicking the empty space.
-
-You can drag a selected shape to a new position by selecting the shape, then pointing the center of the selected shape and moving your cursor to the shape's new center.
-
-For example, the following sequence would select a shape with a center 100,200 and drag it so that its new center is 200,500.
-
-```sequence
-TOOL select;
-
-// Click the shape to select it
-POINTER_MOVE 100 200;
-POINTER_DOWN;
-POINTER_UP;
-
-// Click and drag the shape to its new position
-POINTER_DOWN;
-POINTER_MOVE 200 500;
-POINTER UP;
-
-// Click on an empty place on the canvas to deselect the shape
-POINTER_MOVE 500 500;
-POINTER DOWN;
-POINTER UP;
-```
-
-## Text tool
-
-You can use the "text" tool to create text on the canvas.
-
-For example, the following sequence will add the text "Hello" at (0,0).
-
-```sequence
-TEXT 0 0 Hello;
-```
-
-```sequence
-TEXT 0 0 Hello world! This is a long label;
-```
-
 ## Draw tool
 
-The "draw" tool can be used to draw organic polylines. To create a shape with this tool, select the draw tool (`TOOL draw;`), then move the pointer to the line's first position (e.g. `POINTER_MOVE 0 0;`), then begin pointing (`POINTER_DOWN;`), then move the pointer to each point in order that should belong to the line (e.g. `POINTER_MOVE 100 0; POINTER_MOVE 0 100; POINTER MOVE 100 100;`), and finally stop pointing (`POINTER_UP;`).
+The "draw" tool can be used to draw lines. To create a shape with this tool, select the draw tool (`TOOL draw;`), then drag the pointer from the line's first position to its second point (e.g. `POINTER_DRAG 100 0 100 100;`).
 
 For example, the following sequence will draw the letter "L" with its top left corner at the page coordinate (0,0).
 
 ```sequence
 TOOL draw;
-POINTER_MOVE 0 0;
-POINTER_DOWN;
-POINTER_MOVE 0 100;
-POINTER_MOVE 100 100;
+POINTER_DRAG 0 100 100 100;
 POINTER UP;
 ```
 
@@ -245,96 +71,13 @@ For example, the following sequence will draw the letter "E" its top left corner
 
 ```sequence
 TOOL draw;
-POINTER_MOVE 0 0;
-POINTER_DOWN;
-POINTER_MOVE 0 100;
-POINTER UP;
-POINTER MOVE 0 0;
-POINTER_MOVE 100 0;
-POINTER UP;
-POINTER MOVE 0 50;
-POINTER_MOVE 100 50;
-POINTER UP;
-POINTER MOVE 0 100;
-POINTER_MOVE 100 100;
-POINTER UP;
-```
-
-For example, the following sequence will draw a "Z" shape with its top left corner at the page coordinate (0,0).
-
-```sequence
-TOOL draw;
-POINTER_MOVE 0 0;
-POINTER_DOWN;
-POINTER_MOVE 100 0;
-POINTER_MOVE 0 100;
-POINTER_MOVE 100 100;
-POINTER UP;
-```
-
-You can use the draw tool to create dots by clicking without moving the pointer. For example, the following sequence would create a dotted lower-case letter i.
-
-```sequence
-TOOL draw;
-
-// draw the dot
-POINTER_MOVE 0 0;
-POINTER_DOWN;
-POINTER_UP;
-
-// draw the stem
-POINTER_MOVE 0 10;
-POINTER_DOWN;
-POINTER_MOVE 0 100;
-POINTER UP;
+POINTER_DRAG 0 0 0 100;
+POINTER DRAG 0 0 100 0;
+POINTER DRAG 0 50 100 50;
+POINTER DRAG 0 100 100 100;
 ```
 
 You ARE able to write text with the draw tool. Use a simplified structure for the letter. Remember to draw all of the recognizable letter parts.
-
-## Box, ellipse, star tools
-
-The "box" and "ellipse" tools can be used to draw rectangles and ellipses/circles. To create a shape with these tools, select the tool, then move the pointer to the shape's top left corner, then begin pointing, then move the pointer to the shaoe's bottom right corner, then stop pointing.
-
-For example, the following sequence would create a box with its top left corner at the page coordinate (0,0) and a size of (100,100):
-
-```sequence
-TOOL box;
-POINTER_MOVE 0 0;
-POINTER_DOWN;
-POINTER_MOVE 100 100;
-POINTER_UP;
-```
-
-As a second example, the following sequence would create a box with its CENTER at the page coordinate (0,0) and a size of (100,100):
-
-TOOL box;
-
-```sequence
-// Start at a point equal to (centerX-(width/2),centerY-(height/2))
-POINTER_MOVE -50 -50;
-POINTER_DOWN;
-// Drag to at a point equal to (centerX+(width/2),centerY+(height/2))
-POINTER_MOVE 50 50;
-POINTER_UP;
-```
-
-As a third example, the following sequence would create a lowercase letter i using the box and ellipse tool.
-
-```sequence
-// draw the dot
-TOOL ellipse;
-POINTER_MOVE 0 0;
-POINTER_DOWN;
-POINTER_MOVE 10 10;
-POINTER_UP;
-
-// draw the stem
-TOOL box;
-POINTER_MOVE 0 20;
-POINTER_DOWN;
-POINTER_MOVE 10 100;
-POINTER_UP;
-```
 
 ---
 
