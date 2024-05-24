@@ -73,7 +73,11 @@ export class CompletionCommandsThread implements Thread<ChatCompletionStream> {
 		})
 
 		const stream = openai.beta.chat.completions.stream({
-			model: 'gpt-4',
+			model: 'gpt-4o',
+			max_tokens: 4096,
+			temperature: 0,
+			seed: 42,
+			n: 1,
 			messages: this.messages,
 		})
 
