@@ -1,6 +1,6 @@
-import { TLEditorComponents, Tldraw } from '@tldraw/tldraw'
-import '@tldraw/tldraw/tldraw.css'
 import { useMemo } from 'react'
+import { TLEditorComponents, Tldraw } from 'tldraw'
+import 'tldraw/tldraw.css'
 import { UserPrompt } from '../../components/UserPrompt'
 import { CompletionCommandsAssistant } from './CompletionsCommandsAssistant'
 

@@ -4,9 +4,9 @@ import {
 	TLDrawShape,
 	TLGeoShape,
 	TLTextShape,
-	Vec2d,
+	Vec,
 	createShapeId,
-} from '@tldraw/tldraw'
+} from 'tldraw'
 
 const basePoint = {
 	type: 'pointer',
@@ -67,11 +67,11 @@ export function getCurrentPageDescription(editor: Editor) {
 
 export async function pointerMoveTo(editor: Editor, { x, y }: { x: number; y: number }) {
 	const current = editor.inputs.currentPagePoint
-	const dist = Vec2d.Dist(current, { x, y })
+	const dist = Vec.Dist(current, { x, y })
 	const steps = Math.min(32, Math.max(2, Math.ceil(dist / 8)))
 
 	for (let i = 0; i < steps; i++) {
-		const point = Vec2d.Lrp(current, { x, y }, i / (steps - 1))
+		const point = Vec.Lrp(current, { x, y }, i / (steps - 1))
 		pointerMove(editor, point)
 		await waitFrame()
 	}

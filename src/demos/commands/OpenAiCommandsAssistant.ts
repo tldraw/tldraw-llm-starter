@@ -1,5 +1,5 @@
-import { Editor } from '@tldraw/tldraw'
 import OpenAI from 'openai'
+import { Editor } from 'tldraw'
 import { Assistant, Thread } from '../../Assistant'
 import { fetchText } from '../../lib/fetchText'
 import { delayMs } from '../../lib/utils'

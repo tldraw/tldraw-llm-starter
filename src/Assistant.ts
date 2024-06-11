@@ -1,4 +1,4 @@
-import { Editor } from '@tldraw/tldraw'
+import { Editor } from 'tldraw'
 
 export interface Assistant<T> {
 	getDefaultSystemPrompt(): Promise<string>

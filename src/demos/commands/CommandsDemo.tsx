@@ -1,5 +1,5 @@
-import { TLEditorComponents, Tldraw } from '@tldraw/tldraw'
 import { useMemo } from 'react'
+import { TLEditorComponents, Tldraw } from 'tldraw'
 import { UserPrompt } from '../../components/UserPrompt'
 import { OpenAiCommandsAssistant } from './OpenAiCommandsAssistant'
 

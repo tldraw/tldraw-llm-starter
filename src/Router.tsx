@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { Spinner } from './components/Spinner'
+import MathDemo from './demos/math/MathDemo'
 
 const CommandsDemo = lazy(() => import('./demos/commands/CommandsDemo'))
 const CompletionsDemo = lazy(() => import('./demos/competions-commands/CompletionsDemo'))
@@ -27,6 +28,11 @@ const routes = [
 		name: 'Sandbox',
 		path: '/sandbox',
 		element: <Sandbox />,
+	},
+	{
+		name: 'Math',
+		path: '/math',
+		element: <MathDemo />,
 	},
 ]
 

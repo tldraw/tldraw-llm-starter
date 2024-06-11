@@ -82,15 +82,12 @@ export async function parseSequence(editor: Editor, text: string) {
 							break
 						}
 						case 'box': {
-							editor.updateInstanceState(
-								{
-									stylesForNextShape: {
-										...editor.getInstanceState().stylesForNextShape,
-										[GeoShapeGeoStyle.id]: 'rectangle',
-									},
+							editor.updateInstanceState({
+								stylesForNextShape: {
+									...editor.getInstanceState().stylesForNextShape,
+									[GeoShapeGeoStyle.id]: 'rectangle',
 								},
-								{ ephemeral: true }
-							)
+							})
 							editor.setCurrentTool('geo')
 							break
 						}
@@ -99,15 +96,12 @@ export async function parseSequence(editor: Editor, text: string) {
 						case 'ellipse':
 						case 'cloud':
 						case 'star': {
-							editor.updateInstanceState(
-								{
-									stylesForNextShape: {
-										...editor.getInstanceState().stylesForNextShape,
-										[GeoShapeGeoStyle.id]: tool,
-									},
+							editor.updateInstanceState({
+								stylesForNextShape: {
+									...editor.getInstanceState().stylesForNextShape,
+									[GeoShapeGeoStyle.id]: tool,
 								},
-								{ ephemeral: true }
-							)
+							})
 							editor.setCurrentTool('geo')
 							break
 						}

@@ -1,4 +1,4 @@
-import { Editor, Vec2d } from '@tldraw/tldraw'
+import { Editor, Vec } from 'tldraw'
 import {
 	createRectangleShape,
 	createTextShape,
@@ -158,7 +158,7 @@ type CapturedCommand = { command: (typeof commands)[number]; parameters: string[
 export class EditorDriverApi {
 	constructor(
 		public editor: Editor,
-		public camera: Vec2d
+		public camera: Vec
 	) {
 		editor.updateInstanceState({ isToolLocked: true })
 	}
@@ -305,7 +305,7 @@ export class EditorDriverApi {
 		console.log([name, ...params].join(' '))
 
 		const { camera } = this
-		const offset = Vec2d.Sub(this.editor.getCamera(), camera)
+		const offset = Vec.Sub(this.editor.getCamera(), camera)
 
 		switch (name) {
 			case 'TEXT': {

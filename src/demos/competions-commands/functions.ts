@@ -5,9 +5,9 @@ import {
 	TLGeoShape,
 	TLKeyboardEventInfo,
 	TLTextShape,
-	Vec2d,
+	Vec,
 	createShapeId,
-} from '@tldraw/tldraw'
+} from 'tldraw'
 
 function getKeyboardEvent(_editor: Editor, key: string): TLKeyboardEventInfo {
 	return {
@@ -106,7 +106,7 @@ export async function pointerMoveTo(
 	const _to = editor.pageToScreen(to)
 
 	for (let i = 1; i <= steps; i++) {
-		const point = Vec2d.Lrp(_from, _to, i / steps)
+		const point = Vec.Lrp(_from, _to, i / steps)
 		editor.dispatch({
 			...getPointerEvent(editor),
 			name: 'pointer_move',

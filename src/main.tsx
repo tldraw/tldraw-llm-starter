@@ -1,5 +1,5 @@
-import '@tldraw/tldraw/tldraw.css'
 import ReactDOM from 'react-dom/client'
+import 'tldraw/tldraw.css'
 import { Router } from './Router'
 import './index.css'
 

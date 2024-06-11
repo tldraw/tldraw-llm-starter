@@ -484,16 +484,16 @@
   dependencies:
     "@babel/runtime" "^7.13.10"
 
-"@radix-ui/react-alert-dialog@^1.0.0":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@radix-ui/react-alert-dialog/-/react-alert-dialog-1.0.4.tgz#709d7625efadac503c6276d9e92d3449184f5e68"
-  integrity sha512-jbfBCRlKYlhbitueOAv7z74PXYeIQmWpKwm3jllsdkw7fGWNkxqP3v0nY9WmOzcPqpQuoorNtvViBgL46n5gVg==
+"@radix-ui/react-alert-dialog@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-alert-dialog/-/react-alert-dialog-1.0.5.tgz#70dd529cbf1e4bff386814d3776901fcaa131b8c"
+  integrity sha512-OrVIOcZL0tl6xibeuGt5/+UxoT2N27KCFOPjFyfXMnchxSHZ/OW7cCX2nGlIYJrbHK/fczPcFzAwvNBB6XBNMA==
   dependencies:
     "@babel/runtime" "^7.13.10"
     "@radix-ui/primitive" "1.0.1"
     "@radix-ui/react-compose-refs" "1.0.1"
     "@radix-ui/react-context" "1.0.1"
-    "@radix-ui/react-dialog" "1.0.4"
+    "@radix-ui/react-dialog" "1.0.5"
     "@radix-ui/react-primitive" "1.0.3"
     "@radix-ui/react-slot" "1.0.2"
 
@@ -543,28 +543,7 @@
   dependencies:
     "@babel/runtime" "^7.13.10"
 
-"@radix-ui/react-dialog@1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@radix-ui/react-dialog/-/react-dialog-1.0.4.tgz#06bce6c16bb93eb36d7a8589e665a20f4c1c52c1"
-  integrity sha512-hJtRy/jPULGQZceSAP2Re6/4NpKo8im6V8P2hUqZsdFiSL8l35kYsw3qbRI6Ay5mQd2+wlLqje770eq+RJ3yZg==
-  dependencies:
-    "@babel/runtime" "^7.13.10"
-    "@radix-ui/primitive" "1.0.1"
-    "@radix-ui/react-compose-refs" "1.0.1"
-    "@radix-ui/react-context" "1.0.1"
-    "@radix-ui/react-dismissable-layer" "1.0.4"
-    "@radix-ui/react-focus-guards" "1.0.1"
-    "@radix-ui/react-focus-scope" "1.0.3"
-    "@radix-ui/react-id" "1.0.1"
-    "@radix-ui/react-portal" "1.0.3"
-    "@radix-ui/react-presence" "1.0.1"
-    "@radix-ui/react-primitive" "1.0.3"
-    "@radix-ui/react-slot" "1.0.2"
-    "@radix-ui/react-use-controllable-state" "1.0.1"
-    aria-hidden "^1.1.1"
-    react-remove-scroll "2.5.5"
-
-"@radix-ui/react-dialog@^1.0.5":
+"@radix-ui/react-dialog@1.0.5", "@radix-ui/react-dialog@^1.0.5":
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/@radix-ui/react-dialog/-/react-dialog-1.0.5.tgz#71657b1b116de6c7a0b03242d7d43e01062c7300"
   integrity sha512-GjWJX/AUpB703eEBanuBnIWdIXg6NvJFCXcNlSZk4xdszCdhrJgBoUd1cGk67vFO+WdA2pfI/plOpqz/5GUP6Q==
@@ -941,16 +920,16 @@
   resolved "https://registry.yarnpkg.com/@remix-run/router/-/router-1.13.1.tgz#07e2a8006f23a3bc898b3f317e0a58cc8076b86e"
   integrity sha512-so+DHzZKsoOcoXrILB4rqDkMDy7NLMErRdOxvzvOKb507YINKUP4Di+shbTZDhSE/pBZ+vr7XGIpcOO0VLSA+Q==
 
-"@tldraw/editor@2.0.0-canary.be93cc0eb6d8":
-  version "2.0.0-canary.be93cc0eb6d8"
-  resolved "https://registry.yarnpkg.com/@tldraw/editor/-/editor-2.0.0-canary.be93cc0eb6d8.tgz#b25ebd05cf37d9532465c69b76fe179f5da5eff3"
-  integrity sha512-o8O5LBrhVx/LhaBIWa0DQXI70cjHd2rG9Rfuf/5MTvXMrE07T6i4kXi7HBW3MSgeP3gFQGKRIR3mImMSnVwgUQ==
+"@tldraw/editor@2.2.0-canary.45ac87d39ee5":
+  version "2.2.0-canary.45ac87d39ee5"
+  resolved "https://registry.yarnpkg.com/@tldraw/editor/-/editor-2.2.0-canary.45ac87d39ee5.tgz#7fda52e4ad9e5707cf863539a1eb1f5dfe78c28e"
+  integrity sha512-a1SD5yz3ctx77i0hrCFlpXAh64kHv6hP49iTq3s2kFC8kO98Uj3uzesCQqeSbogKhoSI711WiDGyY26H6PhTdQ==
   dependencies:
-    "@tldraw/state" "2.0.0-canary.be93cc0eb6d8"
-    "@tldraw/store" "2.0.0-canary.be93cc0eb6d8"
-    "@tldraw/tlschema" "2.0.0-canary.be93cc0eb6d8"
-    "@tldraw/utils" "2.0.0-canary.be93cc0eb6d8"
-    "@tldraw/validate" "2.0.0-canary.be93cc0eb6d8"
+    "@tldraw/state" "2.2.0-canary.45ac87d39ee5"
+    "@tldraw/store" "2.2.0-canary.45ac87d39ee5"
+    "@tldraw/tlschema" "2.2.0-canary.45ac87d39ee5"
+    "@tldraw/utils" "2.2.0-canary.45ac87d39ee5"
+    "@tldraw/validate" "2.2.0-canary.45ac87d39ee5"
     "@types/core-js" "^2.5.5"
     "@use-gesture/react" "^10.2.27"
     classnames "^2.3.2"
@@ -962,63 +941,43 @@
     lodash.uniq "^4.5.0"
     nanoid "4.0.2"
 
-"@tldraw/state@2.0.0-canary.be93cc0eb6d8":
-  version "2.0.0-canary.be93cc0eb6d8"
-  resolved "https://registry.yarnpkg.com/@tldraw/state/-/state-2.0.0-canary.be93cc0eb6d8.tgz#71881f7f42849136f9ff70ddd0bada5a595df130"
-  integrity sha512-R+09omur+Tu+1ilBBG0ur6FopUNv1lfzuRdbpNjXq2/gaEBvDip0PKeQW/U4aCsx8FIpTuoEGyJyS+IzlNaINg==
+"@tldraw/state@2.2.0-canary.45ac87d39ee5":
+  version "2.2.0-canary.45ac87d39ee5"
+  resolved "https://registry.yarnpkg.com/@tldraw/state/-/state-2.2.0-canary.45ac87d39ee5.tgz#66f549b31a0ab59d999a63791be71e3875d39c4e"
+  integrity sha512-4CQWACsu/7SZUNzV3VSpj2Q4qwVwcb0pdXUJPEgaomDykB6Om7gumNZQL9xW6r14t1MtnZagHktGwzKKrc46Hg==
 
-"@tldraw/store@2.0.0-canary.be93cc0eb6d8":
-  version "2.0.0-canary.be93cc0eb6d8"
-  resolved "https://registry.yarnpkg.com/@tldraw/store/-/store-2.0.0-canary.be93cc0eb6d8.tgz#f8546bde843b6026919e4f8906c07eb21acb3251"
-  integrity sha512-v68T+/S7LxHeKN234KB6bxL8YudKNRvUAiKtx8WrtgwP5xCmAqQsvu6GjHgD/26RhZXOapnduCJCcXn1RyXMZg==
+"@tldraw/store@2.2.0-canary.45ac87d39ee5":
+  version "2.2.0-canary.45ac87d39ee5"
+  resolved "https://registry.yarnpkg.com/@tldraw/store/-/store-2.2.0-canary.45ac87d39ee5.tgz#81e80ee2e167f79e109b4603df04181633b94c12"
+  integrity sha512-Zrrk6zwjjNg6OnCym3W8t118iR9eeECU7SyYVlASEOt22s+ZafkmWOTgGfRGiQlrCt0LDA8r0uw0Echkp+DQMg==
   dependencies:
-    "@tldraw/state" "2.0.0-canary.be93cc0eb6d8"
-    "@tldraw/utils" "2.0.0-canary.be93cc0eb6d8"
+    "@tldraw/state" "2.2.0-canary.45ac87d39ee5"
+    "@tldraw/utils" "2.2.0-canary.45ac87d39ee5"
     lodash.isequal "^4.5.0"
     nanoid "4.0.2"
 
-"@tldraw/tldraw@^2.0.0-canary.be93cc0eb6d8":
-  version "2.0.0-canary.be93cc0eb6d8"
-  resolved "https://registry.yarnpkg.com/@tldraw/tldraw/-/tldraw-2.0.0-canary.be93cc0eb6d8.tgz#6904a9195edba31d82a235cc217b16864d9b4aaf"
-  integrity sha512-Mr7/58PQMRvBy8iqarYodCrOefJEWgc1gd3DsUF2lUGGQSwtewh7QwXj2c+2d+CRY9HSNMpiGTBJf4FEuWxXlw==
+"@tldraw/tlschema@2.2.0-canary.45ac87d39ee5":
+  version "2.2.0-canary.45ac87d39ee5"
+  resolved "https://registry.yarnpkg.com/@tldraw/tlschema/-/tlschema-2.2.0-canary.45ac87d39ee5.tgz#c5c78346ed060e5002f15f265dd055b8048266b1"
+  integrity sha512-m8QRO6McKfRGkPvICr0UTK/ahYtIfiYUEdLTMiXBPqYJI9ILU7tFXxXnRc2AsTajCVV7Ux7725yKBHt8futRMQ==
   dependencies:
-    "@radix-ui/react-alert-dialog" "^1.0.0"
-    "@radix-ui/react-context-menu" "^2.1.5"
-    "@radix-ui/react-dialog" "^1.0.5"
-    "@radix-ui/react-dropdown-menu" "^2.0.6"
-    "@radix-ui/react-popover" "^1.0.7"
-    "@radix-ui/react-select" "^1.2.0"
-    "@radix-ui/react-slider" "^1.1.0"
-    "@radix-ui/react-toast" "^1.1.1"
-    "@tldraw/editor" "2.0.0-canary.be93cc0eb6d8"
-    canvas-size "^1.2.6"
-    classnames "^2.3.2"
-    downscale "^1.0.6"
-    hotkeys-js "^3.11.2"
-    lz-string "^1.4.4"
-
-"@tldraw/tlschema@2.0.0-canary.be93cc0eb6d8":
-  version "2.0.0-canary.be93cc0eb6d8"
-  resolved "https://registry.yarnpkg.com/@tldraw/tlschema/-/tlschema-2.0.0-canary.be93cc0eb6d8.tgz#17a4c36b9ef4462ec0bd39ca563400099c907847"
-  integrity sha512-fzzIYbcibWRpXk8UP3E+4wYicEevTQ866k+HyntJPCIi2HbJU5Ghag1/DuYUx7nT6iUgPiUCjXraG10e+iwkPQ==
-  dependencies:
-    "@tldraw/state" "2.0.0-canary.be93cc0eb6d8"
-    "@tldraw/store" "2.0.0-canary.be93cc0eb6d8"
-    "@tldraw/utils" "2.0.0-canary.be93cc0eb6d8"
-    "@tldraw/validate" "2.0.0-canary.be93cc0eb6d8"
+    "@tldraw/state" "2.2.0-canary.45ac87d39ee5"
+    "@tldraw/store" "2.2.0-canary.45ac87d39ee5"
+    "@tldraw/utils" "2.2.0-canary.45ac87d39ee5"
+    "@tldraw/validate" "2.2.0-canary.45ac87d39ee5"
     nanoid "4.0.2"
 
-"@tldraw/utils@2.0.0-canary.be93cc0eb6d8":
-  version "2.0.0-canary.be93cc0eb6d8"
-  resolved "https://registry.yarnpkg.com/@tldraw/utils/-/utils-2.0.0-canary.be93cc0eb6d8.tgz#3933f5c474234edd5d2fc0b70183432fe13fdd7c"
-  integrity sha512-JXg5yQBWLLO2SbK7eceRQVDhes1njnE7OEbo3MBvlYvnJkIz5ZaxuWat6bQrgD7ARA5T2OkecCX64zDgGE9SIw==
+"@tldraw/utils@2.2.0-canary.45ac87d39ee5":
+  version "2.2.0-canary.45ac87d39ee5"
+  resolved "https://registry.yarnpkg.com/@tldraw/utils/-/utils-2.2.0-canary.45ac87d39ee5.tgz#47707104d1ec7754969ae58bd23ec61c6b0ded3b"
+  integrity sha512-TzlSEd1dSd5L9K9r2qMkRKzVTb5djAIDAHM5M53ut8yKoMe1yjIrRMLkYQHu7oQCo8JNL+QPUwHuvIUDFNkcWQ==
 
-"@tldraw/validate@2.0.0-canary.be93cc0eb6d8":
-  version "2.0.0-canary.be93cc0eb6d8"
-  resolved "https://registry.yarnpkg.com/@tldraw/validate/-/validate-2.0.0-canary.be93cc0eb6d8.tgz#919362bd7d20b2acbb8300f6ef6a2c622358b604"
-  integrity sha512-Jqb0vhN4fy5ZQdZ1rfnKwViwdPk7rmDUV62o/JVNvu+211Gw4hlq4ialkhcyswC6pt008gu9RRO/fA/dobJ+qg==
+"@tldraw/validate@2.2.0-canary.45ac87d39ee5":
+  version "2.2.0-canary.45ac87d39ee5"
+  resolved "https://registry.yarnpkg.com/@tldraw/validate/-/validate-2.2.0-canary.45ac87d39ee5.tgz#d314299fbecd80282769fc5147e8b2224fc5df58"
+  integrity sha512-CCyYUC3zQo/XvW7TVbiZxLtRDarkiLTnio0IUxUVXznGxNa8ipYlUzx2bHGDapZSOG1lJ9U4LlKWS6tToSaaSQ==
   dependencies:
-    "@tldraw/utils" "2.0.0-canary.be93cc0eb6d8"
+    "@tldraw/utils" "2.2.0-canary.45ac87d39ee5"
 
 "@types/core-js@^2.5.5":
   version "2.5.5"
@@ -1581,11 +1540,6 @@ dotenv@^16.3.1:
   version "16.3.1"
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.3.1.tgz#369034de7d7e5b120972693352a3bf112172cc3e"
   integrity sha512-IPzF4w4/Rd94bA9imS68tZBaYyBWSCE47V1RGuMrB94iyTOIEwRmVL2x/4An+6mETpLrKJ5hQkB8W4kFAadeIQ==
-
-downscale@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/downscale/-/downscale-1.0.6.tgz#f1a1cb4d64c5831f1ba65341369131b5a73d2f2c"
-  integrity sha512-Arh9ftj+wo3CkFoT48SgT/crMyqmgZtNaaV/etjzHaUqNAaS36GS38ECURnfl7X/XvXN5uZNigGF7Vhffrm/pg==
 
 electron-to-chromium@^1.4.477:
   version "1.4.484"
@@ -2809,6 +2763,26 @@ thenify-all@^1.0.0:
   integrity sha512-RVZSIV5IG10Hk3enotrhvz0T9em6cyHBLkH/YAZuKqd8hRkKhSfCGIcP2KUY0EPxndzANBmNllzWPwak+bheSw==
   dependencies:
     any-promise "^1.0.0"
+
+tldraw@^2.2.0-canary.45ac87d39ee5:
+  version "2.2.0-canary.45ac87d39ee5"
+  resolved "https://registry.yarnpkg.com/tldraw/-/tldraw-2.2.0-canary.45ac87d39ee5.tgz#895f4f20919d62b017727ea2848531784b381be6"
+  integrity sha512-rySlJvSHQfdNg4/ECdYyVJxDHkaeKD/OTtzKQu5SOWg7pLPpnkO1oweOwZZbDZS0CrkXH3Ti+n1sb9LTsvcCjg==
+  dependencies:
+    "@radix-ui/react-alert-dialog" "^1.0.5"
+    "@radix-ui/react-context-menu" "^2.1.5"
+    "@radix-ui/react-dialog" "^1.0.5"
+    "@radix-ui/react-dropdown-menu" "^2.0.6"
+    "@radix-ui/react-popover" "^1.0.7"
+    "@radix-ui/react-select" "^1.2.0"
+    "@radix-ui/react-slider" "^1.1.0"
+    "@radix-ui/react-toast" "^1.1.1"
+    "@tldraw/editor" "2.2.0-canary.45ac87d39ee5"
+    "@tldraw/store" "2.2.0-canary.45ac87d39ee5"
+    canvas-size "^1.2.6"
+    classnames "^2.3.2"
+    hotkeys-js "^3.11.2"
+    lz-string "^1.4.4"
 
 to-fast-properties@^2.0.0:
   version "2.0.0"

@@ -1,4 +1,4 @@
-import { Editor, TLDrawShape, TLGeoShape, TLTextShape } from '@tldraw/tldraw'
+import { Editor, TLDrawShape, TLGeoShape, TLTextShape } from 'tldraw'
 
 export function getUserMessage(editor: Editor, prompt: string) {
 	return `

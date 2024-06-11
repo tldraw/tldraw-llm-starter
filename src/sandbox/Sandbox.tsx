@@ -1,3 +1,5 @@
+import classNames from 'classnames'
+import { ComponentType, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
 	Editor,
 	TLTextShape,
@@ -7,9 +9,7 @@ import {
 	defaultShapeUtils,
 	parseTldrawJsonFile,
 	transact,
-} from '@tldraw/tldraw'
-import classNames from 'classnames'
-import { ComponentType, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+} from 'tldraw'
 import { Spinner } from '../components/Spinner'
 import { X } from '../components/X'
 import { ConcurrencyLimiter } from '../lib/ConcurrencyLimiter'

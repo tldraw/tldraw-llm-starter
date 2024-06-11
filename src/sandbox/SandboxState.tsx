@@ -1,4 +1,4 @@
-import { Editor, StoreSnapshot, TLRecord } from '@tldraw/tldraw'
+import { Editor, StoreSnapshot, TLRecord } from 'tldraw'
 import { Assistant } from '../Assistant'
 
 export interface SandboxState {

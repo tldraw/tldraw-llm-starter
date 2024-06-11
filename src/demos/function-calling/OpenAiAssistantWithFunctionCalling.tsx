@@ -1,6 +1,6 @@
-import { Editor } from '@tldraw/tldraw'
 import OpenAI from 'openai'
 import { AssistantUpdateParams } from 'openai/resources/beta/assistants/assistants.mjs'
+import { Editor } from 'tldraw'
 import { Assistant, Thread } from '../../Assistant'
 import { fetchText } from '../../lib/fetchText'
 import { assert, delayMs } from '../../lib/utils'

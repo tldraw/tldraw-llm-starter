@@ -1,6 +1,6 @@
-import { Editor, Vec2d } from '@tldraw/tldraw'
 import OpenAI from 'openai'
 import { ChatCompletionStream } from 'openai/lib/ChatCompletionStream.mjs'
+import { Editor, Vec } from 'tldraw'
 import { Assistant, Thread } from '../../Assistant'
 import { fetchText } from '../../lib/fetchText'
 import { assert } from '../../lib/utils'
@@ -96,7 +96,7 @@ export class CompletionCommandsThread implements Thread<ChatCompletionStream> {
 	async handleAssistantResponse(stream: ChatCompletionStream) {
 		assert(this.currentStream === stream)
 
-		const api = new EditorDriverApi(this.editor, Vec2d.From(this.editor.getCamera()))
+		const api = new EditorDriverApi(this.editor, Vec.From(this.editor.getCamera()))
 
 		return new Promise<void>((resolve, reject) => {
 			stream.on('content', (_delta, snapshot) => {

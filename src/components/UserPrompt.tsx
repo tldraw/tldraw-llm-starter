@@ -1,10 +1,5 @@
-import {
-	DefaultSpinner,
-	stopEventPropagation,
-	useEditor,
-	useLocalStorageState,
-} from '@tldraw/tldraw'
 import { useCallback, useEffect, useState } from 'react'
+import { DefaultSpinner, stopEventPropagation, useEditor, useLocalStorageState } from 'tldraw'
 import { Assistant, Thread } from '../Assistant'
 import { assert } from '../lib/utils'
 import { Spinner } from './Spinner'
