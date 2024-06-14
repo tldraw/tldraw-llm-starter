@@ -1,17 +1,7 @@
 import { Editor, TLDrawShape, TLGeoShape, TLTextShape } from '@tldraw/tldraw'
 
 export function getUserMessage(editor: Editor, prompt: string) {
-	return `${getCurrentViewportDescription(editor)}
-${getCurrentPageDescription(editor)}
-
-${prompt}`
-}
-
-export function getCurrentViewportDescription(editor: Editor) {
-	const { midX, midY, w, h } = editor.getViewportPageBounds()
-	return `My current viewport is center (${midX.toFixed(0)},${midY.toFixed(0)}) size (${w.toFixed(
-		0
-	)},${h.toFixed(0)}).`
+	return `${prompt}`
 }
 
 export function getCurrentPageDescription(editor: Editor) {

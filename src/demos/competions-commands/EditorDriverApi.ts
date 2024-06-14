@@ -1,41 +1,14 @@
 import { Editor, Vec2d } from '@tldraw/tldraw'
 import {
-	createRectangleShape,
-	createTextShape,
 	pointerDown,
 	pointerMove,
 	pointerMoveTo,
 	pointerUp,
 	selectTool,
+	waitTick,
 } from './functions'
 
 export const commands = [
-	// {
-	// 	keyword: 'POINTER_DOWN',
-	// 	description: 'Begin pointing (clicking) with the pointer at its current position on the page.',
-	// 	parameters: [],
-	// },
-	// {
-	// 	keyword: 'POINTER_UP',
-	// 	description: 'Stop pointing (clicking) the pointer at its current position on the page.',
-	// 	parameters: [],
-	// },
-	// {
-	// 	keyword: 'POINTER_MOVE',
-	// 	description: 'Move the pointer to a new position on the page.',
-	// 	parameters: [
-	// 		{
-	// 			name: 'x',
-	// 			type: 'number',
-	// 			description: 'The x coordinate of the new pointer position.',
-	// 		},
-	// 		{
-	// 			name: 'y',
-	// 			type: 'number',
-	// 			description: 'The y coordinate of the new pointer position.',
-	// 		},
-	// 	],
-	// },
 	{
 		keyword: 'POINTER_DRAG',
 		description: 'Drag the pointer between two positions on the page.',
@@ -63,91 +36,13 @@ export const commands = [
 		],
 	},
 	{
-		keyword: 'KEY_DOWN',
-		description: 'Begin holding a key.',
-		parameters: [
-			{
-				name: 'key',
-				type: 'string',
-				enum: ['alt', 'shift', 'control'],
-				description: 'The key to press',
-			},
-		],
-	},
-	{
-		keyword: 'KEY_UP',
-		description: 'Release a key.',
-		parameters: [
-			{
-				name: 'key',
-				type: 'string',
-				enum: ['alt', 'shift', 'control'],
-				description: 'The key to release',
-			},
-		],
-	},
-	{
 		keyword: 'TOOL',
 		description: 'Switch to the provided tool.',
 		parameters: [
 			{
 				name: 'tool',
 				type: 'string',
-				enum: ['select', 'draw', 'box', 'ellipse', 'arrow'],
-			},
-		],
-	},
-	{
-		keyword: 'TEXT',
-		description: 'Create text (left aligned) at the given point.',
-		parameters: [
-			{
-				name: 'x',
-				type: 'number',
-				description: 'The x coordinate of the text.',
-			},
-			{
-				name: 'y',
-				type: 'number',
-				description: 'The y coordinate of the text.',
-			},
-			{
-				name: 'text',
-				type: 'string',
-			},
-		],
-	},
-	{
-		keyword: 'RECTANGLE',
-		description: 'Create a rectangle at the given coordinates',
-		parameters: [
-			{
-				name: 'x',
-				type: 'number',
-				description: 'The x coordinate of the shape (top left corner).',
-			},
-			{
-				name: 'y',
-				type: 'number',
-				description: 'The y coordinate of the shape (top left corner).',
-			},
-			{
-				name: 'w',
-				type: 'number',
-				description: 'The width of the shape.',
-			},
-			{
-				name: 'h',
-				type: 'number',
-				description: 'The height of the shape.',
-			},
-			{
-				name: 'color',
-				type: 'string',
-			},
-			{
-				name: 'text',
-				type: 'string',
+				enum: ['draw'],
 			},
 		],
 	},
@@ -272,22 +167,27 @@ export class EditorDriverApi {
 
 	complete() {
 		this.processSnapshot(this.snapshot)
+		this.executeNextInQueue()
 		console.log(this.snapshot)
 	}
 
 	queue: CapturedCommand[] = []
 
+	isExecuting = false
+
 	async executeCommand(command: CapturedCommand) {
 		this.queue.push(command)
-
-		if (this.queue.length === 1) {
-			return await this.executeNextInQueue()
+		if (!this.isExecuting) {
+			this.isExecuting = true
+			this.executeNextInQueue()
 		}
 	}
 
 	async executeNextInQueue(): Promise<void> {
 		const command = this.queue.shift()
 		if (!command) return
+
+		console.log('starting')
 
 		const name = command.command.keyword
 		const params = command.parameters.map((p, i) => {
@@ -305,50 +205,34 @@ export class EditorDriverApi {
 		console.log([name, ...params].join(' '))
 
 		const { camera } = this
-		const offset = Vec2d.Sub(this.editor.getCamera(), camera)
+		const vpb = this.editor.getViewportPageBounds()
+		const offset = Vec2d.Sub(this.editor.getCamera(), camera).addXY(vpb.w * 0.32, 0)
 
 		switch (name) {
-			case 'TEXT': {
-				const [x, y, text] = params as [number, number, string]
-				createTextShape(this.editor, x - offset.x, y - offset.y, text)
-				break
-			}
-			case 'RECTANGLE': {
-				const [x, y, w, h, color, text] = params as [number, number, number, number, string, string]
-				createRectangleShape(this.editor, x - offset.x, y - offset.y, w, h, color, text)
-				break
-			}
-			// case 'POINTER_DOWN': {
-			// 	pointerDown(this.editor)
-			// 	break
-			// }
-			// case 'POINTER_UP': {
-			// 	pointerUp(this.editor)
-			// 	break
-			// }
-			// case 'POINTER_MOVE': {
-			// 	const [x, y] = params as [number, number, string]
-			// 	await pointerMoveTo(this.editor, { x, y })
-			// 	break
-			// }
 			case 'POINTER_DRAG': {
 				const [x1, y1, x2, y2, _modifiers] = params as [number, number, number, number, string]
-				pointerMove(this.editor, { x: x1 - offset.x, y: y1 - offset.y })
-				pointerDown(this.editor)
+				await pointerMove(this.editor, { x: x1 - offset.x, y: y1 - offset.y })
+				await pointerDown(this.editor)
 				await pointerMoveTo(
 					this.editor,
 					{ x: x1 - offset.x, y: y1 - offset.y },
 					{ x: x2 - offset.x, y: y2 - offset.y }
 				)
-				pointerUp(this.editor)
+				await pointerUp(this.editor)
 				break
 			}
 			case 'TOOL': {
 				const [tool] = params as [string]
-				selectTool(this.editor, { tool })
+				await selectTool(this.editor, { tool })
 			}
 		}
 
-		return await this.executeNextInQueue()
+		await waitTick(this.editor)
+
+		if (this.queue.length === 0) {
+			this.isExecuting = false
+		} else {
+			await this.executeNextInQueue()
+		}
 	}
 }

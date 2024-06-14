@@ -51,6 +51,10 @@ function getPointerEvent(editor: Editor) {
 	} as const
 }
 
+export async function waitTick(editor: Editor) {
+	return new Promise((r) => editor.once('tick', r))
+}
+
 async function waitFrame() {
 	return new Promise((r) => requestAnimationFrame(r))
 }
@@ -112,8 +116,9 @@ export async function pointerMoveTo(
 			name: 'pointer_move',
 			point,
 		})
-		await waitFrame()
+		await waitTick(editor)
 	}
+	await waitTick(editor)
 }
 
 export async function pointerMove(editor: Editor, { x, y }: { x: number; y: number }) {
@@ -123,7 +128,7 @@ export async function pointerMove(editor: Editor, { x, y }: { x: number; y: numb
 		name: 'pointer_move',
 		point: pointInScreenSpace,
 	})
-	await waitFrame()
+	await waitTick(editor)
 }
 
 export async function pointerDown(editor: Editor) {
@@ -133,7 +138,7 @@ export async function pointerDown(editor: Editor) {
 		name: 'pointer_down',
 		point: { x, y },
 	})
-	await waitFrame()
+	await waitTick(editor)
 }
 
 export async function pointerUp(editor: Editor) {
@@ -143,7 +148,7 @@ export async function pointerUp(editor: Editor) {
 		name: 'pointer_up',
 		point: { x, y },
 	})
-	await waitFrame()
+	await waitTick(editor)
 }
 
 export async function click(editor: Editor, { x, y }: { x: number; y: number }) {
@@ -152,7 +157,7 @@ export async function click(editor: Editor, { x, y }: { x: number; y: number }) 
 	pointerDown(editor)
 	pointerUp(editor)
 	editor.cancelDoubleClick()
-	await waitFrame()
+	await waitTick(editor)
 }
 
 export async function doubleClick(editor: Editor, { x, y }: { x: number; y: number }) {
@@ -162,7 +167,7 @@ export async function doubleClick(editor: Editor, { x, y }: { x: number; y: numb
 	pointerUp(editor)
 	pointerDown(editor)
 	pointerUp(editor)
-	await waitFrame()
+	await waitTick(editor)
 }
 
 export async function placeText(
@@ -186,7 +191,7 @@ export async function placeText(
 		x: x - bounds.w / 2,
 		y: y - bounds.h / 2,
 	})
-	await waitFrame()
+	await waitTick(editor)
 }
 
 export async function keyDown(editor: Editor, { key }: { key: string }) {
@@ -194,7 +199,7 @@ export async function keyDown(editor: Editor, { key }: { key: string }) {
 		...getKeyboardEvent(editor, key),
 		name: 'key_down',
 	})
-	await waitFrame()
+	await waitTick(editor)
 }
 
 export async function keyUp(editor: Editor, { key }: { key: string }) {
@@ -202,7 +207,7 @@ export async function keyUp(editor: Editor, { key }: { key: string }) {
 		...getKeyboardEvent(editor, key),
 		name: 'key_up',
 	})
-	await waitFrame()
+	await waitTick(editor)
 }
 
 export function selectTool(editor: Editor, { tool }: { tool: string }) {
@@ -264,7 +269,7 @@ export async function createTextShape(editor: Editor, x: number, y: number, ...t
 			align: 'start',
 		},
 	})
-	await waitFrame()
+	await waitTick(editor)
 }
 
 export async function createRectangleShape(
@@ -292,5 +297,5 @@ export async function createRectangleShape(
 			verticalAlign: 'middle',
 		},
 	})
-	await waitFrame()
+	await waitTick(editor)
 }
